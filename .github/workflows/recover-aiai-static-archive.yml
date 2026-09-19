@@ -1,0 +1,66 @@
+name: Recover approved AIAI archive
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/recover-aiai-static-archive.yml']
+permissions:
+  contents: write
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect encoding and recover only a CRC-valid archive
+        run: |
+          python3 - <<'PY'
+          import pathlib,re,base64,zipfile,io,json,hashlib
+          p=pathlib.Path('site.zip.b64');raw=p.read_text();s=''.join(raw.split())
+          bad=[{'position':m.start(),'char':repr(m.group()),'near':s[max(0,m.start()-20):m.start()+25]} for m in re.finditer(r'[^A-Za-z0-9+/=]',s)]
+          print('ENCODING_DIAGNOSTIC',json.dumps({'length':len(s),'invalid':bad[:12],'tail':s[-120:]}))
+          variants=[s,s.replace('\\n','').replace('\\r','').strip('"'),s.replace('-','+').replace('_','/'),re.sub(r'[^A-Za-z0-9+/=]','',s)]
+          ok=None
+          for i,v in enumerate(variants):
+              try:
+                  data=base64.b64decode(v,validate=True);z=zipfile.ZipFile(io.BytesIO(data));assert z.testzip() is None
+                  ok=z;print('CRC_VERIFIED_VARIANT',i,len(data));break
+              except Exception as e: print('VARIANT_ERROR',i,type(e).__name__,str(e)[:160])
+          pathlib.Path('delivery').mkdir(exist_ok=True)
+          if ok is None:
+              pathlib.Path('delivery/diagnostic.json').write_text(json.dumps({'valid':False,'length':len(s),'invalid':bad[:20]},indent=2));raise SystemExit(0)
+          expected={'index.html','config.js','styles.css','script.js','motion.js','mobile-v5.css','v5-polish.css','welcome-v5.js','assets/hero-dinner.avif','assets/handheld-pouch.avif','assets/daily-sachet.avif','assets/original-89afe731e62b.avif','assets/pouch-collection.avif'}
+          files={}
+          for n in ok.namelist():
+              if n.endswith('/'):continue
+              path=pathlib.PurePosixPath(n);assert not path.is_absolute() and '..' not in path.parts
+              name=n[5:] if n.startswith('site/') else n
+              if name in expected:files[name]=ok.read(n)
+          assert set(files)==expected
+          h=files['index.html'].decode();badge=re.search(r'<button\b[^>]*class="v5-hero-badge"[^>]*>.*?</button>',h,re.S)
+          assert badge and '甜蜜優惠' in badge.group() and '點我刮開' in badge.group() and '85' not in badge.group()
+          assert h.count('data-scratch-card')==4 and 'https://lin.ee/mO5jVM6' in h
+          assert hashlib.sha256(files['assets/hero-dinner.avif']).hexdigest()=='0bbe5d18941e4973ee630f70bea4b04f8e5effd7e7e5787671bda0ce283c328e'
+          for n,b in files.items():
+              p=pathlib.Path('site')/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b)
+          pathlib.Path('delivery/diagnostic.json').write_text(json.dumps({'valid':True,'files':len(files)}))
+          PY
+      - name: Publish recovered approved static files
+        run: |
+          if [ -f site/index.html ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -- site
+            if ! git diff --cached --quiet; then
+              git commit -m 'Store CRC-verified approved AIAI static website'
+              git push origin HEAD:main
+            fi
+            echo "STATIC_COMMIT=$(git rev-parse HEAD)"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-archive-diagnostic
+          path: |
+            delivery
+            site.zip.b64
+          retention-days: 7
