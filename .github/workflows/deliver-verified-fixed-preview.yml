@@ -1,0 +1,134 @@
+name: Deliver verified fixed AIAI preview
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/deliver-verified-fixed-preview.yml']
+permissions:
+  contents: write
+concurrency:
+  group: aiai-stable-static-delivery
+  cancel-in-progress: false
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore only checksum-verified public frontend files
+        run: |
+          python3 - <<'PY'
+          import urllib.request,pathlib,hashlib,zipfile,io,re
+          url='https://crisp-sparrow-2my8.here.now/approved-site.zip'
+          with urllib.request.urlopen(url,timeout=45) as r:data=r.read()
+          assert hashlib.sha256(data).hexdigest()=='b5344443829f6554f2a6c314e869a875919d22079502786bb0f0ab2cdf7bb02c'
+          z=zipfile.ZipFile(io.BytesIO(data));assert z.testzip() is None
+          expected={'index.html','config.js','styles.css','script.js','motion.js','mobile-v5.css','v5-polish.css','welcome-v5.js','assets/hero-dinner.avif','assets/handheld-pouch.avif','assets/daily-sachet.avif','assets/original-89afe731e62b.avif','assets/pouch-collection.avif'}
+          assert set(z.namelist())==expected
+          for n in sorted(expected):
+              p=pathlib.Path('site')/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(z.read(n))
+          h=pathlib.Path('site/index.html').read_text()
+          assert hashlib.sha256(h.encode()).hexdigest()=='fc90a1db0953af4475687302d63cd94553629d92ac28d14974fe7b87a18abb86'
+          assert '甜蜜優惠' in h and '點我刮開' in h and h.count('data-scratch-card')==4
+          print('EXACT_APPROVED_FRONTEND_RESTORED: 13 files, archive SHA256 verified')
+          PY
+      - name: Save public static files and determine fixed address
+        id: save
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- site
+          if ! git diff --cached --quiet; then
+            git commit -m 'Restore exact approved AIAI website for fixed public hosting'
+            git push origin HEAD:main
+          fi
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "url=https://rawcdn.githack.com/lvicvicvicvic/AI/$SHA/site/index.html?offer=play" >> "$GITHUB_OUTPUT"
+      - name: Install mobile browser engines
+        run: |
+          python3 -m pip -q install playwright
+          python3 -m playwright install --with-deps webkit chromium > /tmp/aiai-mobile-install.log 2>&1
+      - name: Verify normal mobile entry and full interactive flow
+        env:
+          PUBLIC_URL: ${{ steps.save.outputs.url }}
+          PUBLIC_SHA: ${{ steps.save.outputs.sha }}
+        run: |
+          python3 - <<'PY'
+          import json,os,pathlib,re
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('delivery');out.mkdir(exist_ok=True)
+          results=[]
+          with sync_playwright() as p:
+              for engine in ['webkit','chromium']:
+                  browser=getattr(p,engine).launch()
+                  context=browser.new_context(viewport={'width':390,'height':844},device_scale_factor=2,is_mobile=True,has_touch=True)
+                  page=context.new_page();errors=[];notices=[]
+                  page.on('pageerror',lambda e:errors.append(str(e)))
+                  result={'engine':engine,'passed':False}
+                  try:
+                      response=page.goto(os.environ['PUBLIC_URL'],wait_until='domcontentloaded',timeout=90000)
+                      result['httpStatus']=response.status
+                      page.wait_for_timeout(1800)
+                      if page.locator('#aiai-welcome-offer').count()==0:
+                          text=page.locator('body').inner_text()
+                          result['entryNotice']=text[:2500]
+                          page.screenshot(path=str(out/f'{engine}-entry.png'))
+                          (out/f'{engine}-entry.html').write_text(page.content())
+                          for role in ['button','link']:
+                              locator=page.get_by_role(role,name=re.compile(r'continue|proceed|confirm|open|visit|understand',re.I))
+                              if locator.count():
+                                  notices.append(locator.first.inner_text());locator.first.click();break
+                          page.wait_for_timeout(1500)
+                      page.wait_for_selector('#aiai-welcome-offer[open]',timeout=25000)
+                      page.screenshot(path=str(out/f'{engine}-scratch.png'))
+                      assert page.locator('#aiai-welcome-offer input').count()==0
+                      for i in range(3):page.locator('[data-scratch-card]').nth(i).click()
+                      page.wait_for_selector('[data-offer-result]:visible',timeout=8000)
+                      assert page.locator('#v5-result-title').inner_text().replace('\n','')=='85折'
+                      assert page.locator('[data-offer-line]').get_attribute('href')=='https://lin.ee/mO5jVM6'
+                      page.screenshot(path=str(out/f'{engine}-result.png'))
+                      page.locator('[data-welcome-close]').click()
+                      page.wait_for_function('!document.documentElement.classList.contains("v5-dialog-open")')
+                      assert page.locator('.v5-hero-badge').inner_text().splitlines()==['甜蜜優惠','點我刮開']
+                      page.screenshot(path=str(out/f'{engine}-hero.png'))
+                      assert page.locator('.v5-hero-photo img').evaluate('(e)=>e.complete && e.naturalWidth>0')
+                      for width in [320,375,390,430]:
+                          page.set_viewport_size({'width':width,'height':844});page.wait_for_timeout(150)
+                          assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+                      page.locator('[data-person-count="2"]').click()
+                      assert page.locator('[data-person-count="2"]').get_attribute('aria-checked')=='true'
+                      page.locator('[data-plan="onetime"]').click()
+                      assert page.locator('[data-plan="onetime"]').get_attribute('aria-checked')=='true'
+                      faq=page.locator('#faq .accordion button').first;faq.click();assert faq.get_attribute('aria-expanded')=='true'
+                      for y in range(0,int(page.evaluate('document.documentElement.scrollHeight')),800):
+                          page.evaluate('(y)=>scrollTo(0,y)',y);page.wait_for_timeout(40)
+                      page.wait_for_timeout(1000)
+                      broken=page.locator('img').evaluate_all('(a)=>a.filter(e=>e.complete&&!e.naturalWidth).map(e=>e.src)')
+                      assert not broken,broken
+                      assert not errors,errors
+                      result.update({'passed':True,'scratchAutoOpened':True,'badgeText':'甜蜜優惠 / 點我刮開','reward':'85折','lineVerified':True,'buyboxVerified':True,'faqVerified':True,'brokenImages':broken,'errors':errors,'noticeButton':notices})
+                  except Exception as e:
+                      result['error']=str(e)[:1600];result['pageText']=page.locator('body').inner_text()[:1800]
+                      page.screenshot(path=str(out/f'{engine}-failure.png'))
+                  results.append(result);browser.close()
+          result={'siteUrl':os.environ['PUBLIC_URL'],'commit':os.environ['PUBLIC_SHA'],'expiryConfigured':False,'checkoutConnected':False,'verified':all(r['passed'] for r in results),'tests':results}
+          (out/'status.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+          pathlib.Path('PREVIEW_STATUS.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+          print('AIAI_VERIFIED_DELIVERY',json.dumps(result,ensure_ascii=False))
+          PY
+      - name: Save the actual verification result
+        if: always()
+        run: |
+          if [ -f PREVIEW_STATUS.json ]; then
+            git add PREVIEW_STATUS.json
+            if ! git diff --cached --quiet; then
+              git commit -m 'Record actual live mobile browser verification result'
+              git push origin HEAD:main
+            fi
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-fixed-live-website
+          path: delivery
+          retention-days: 30
