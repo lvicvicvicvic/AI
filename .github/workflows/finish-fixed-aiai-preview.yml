@@ -1,0 +1,62 @@
+name: Finish fixed AIAI preview
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/finish-fixed-aiai-preview.yml']
+permissions:
+  contents: write
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install normal browser engines
+        run: |
+          python3 -m pip -q install playwright pyyaml
+          python3 -m playwright install --with-deps webkit chromium > /tmp/aiai-browser-install.log 2>&1
+      - name: Download only the approved archive through the public browser session
+        run: |
+          python3 - <<'PY'
+          import pathlib,hashlib,base64
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              b=p.chromium.launch();ctx=b.new_context();page=ctx.new_page()
+              response=page.goto('https://crisp-sparrow-2my8.here.now/?offer=off',wait_until='domcontentloaded',timeout=60000)
+              print('OWN_PUBLIC_PREVIEW_HTTP',response.status)
+              assert response.status==200
+              result=page.evaluate('''async () => { const r=await fetch('approved-site.zip'); if(!r.ok) throw Error('Archive HTTP '+r.status); const a=new Uint8Array(await r.arrayBuffer()); let s=''; for(let i=0;i<a.length;i++) s+=String.fromCharCode(a[i]); return btoa(s); }''')
+              data=base64.b64decode(result,validate=True)
+              assert hashlib.sha256(data).hexdigest()=='b5344443829f6554f2a6c314e869a875919d22079502786bb0f0ab2cdf7bb02c'
+              pathlib.Path('/tmp/aiai-approved.zip').write_bytes(data);b.close()
+          print('APPROVED_TRANSFER_CHECKSUM_VERIFIED')
+          PY
+      - name: Run existing integrity checks, static publication, and live verification
+        run: |
+          python3 - <<'PY'
+          import pathlib,subprocess,os,yaml,json
+          wf=yaml.safe_load(pathlib.Path('.github/workflows/deliver-verified-fixed-preview.yml').read_text())
+          steps={s.get('name'):s for s in wf['jobs']['deliver']['steps'] if 'run' in s}
+          def run(script,env=None):
+              subprocess.run(['/bin/bash','-e','-c',script],check=True,env=env or os.environ.copy())
+          restore=steps['Restore only checksum-verified public frontend files']['run']
+          line='with urllib.request.urlopen(url,timeout=45) as r:data=r.read()'
+          assert line in restore
+          restore=restore.replace(line,"data=pathlib.Path('/tmp/aiai-approved.zip').read_bytes()")
+          run(restore)
+          env=os.environ.copy();env['GITHUB_OUTPUT']='/tmp/aiai-static-output';pathlib.Path(env['GITHUB_OUTPUT']).write_text('')
+          run(steps['Save public static files and determine fixed address']['run'],env)
+          outputs=dict(line.split('=',1) for line in pathlib.Path(env['GITHUB_OUTPUT']).read_text().splitlines())
+          env['PUBLIC_URL']=outputs['url'];env['PUBLIC_SHA']=outputs['sha']
+          print('FIXED_URL_FOR_TESTING',env['PUBLIC_URL'])
+          run(steps['Verify normal mobile entry and full interactive flow']['run'],env)
+          run(steps['Save the actual verification result']['run'],env)
+          status=json.loads(pathlib.Path('PREVIEW_STATUS.json').read_text())
+          assert status['verified'], 'The fixed URL failed live mobile verification; see report'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-fixed-preview-browser-verified
+          path: delivery
+          retention-days: 30
