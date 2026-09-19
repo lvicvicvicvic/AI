@@ -1,0 +1,121 @@
+name: Publish approved AIAI static preview
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-approved-gummy-preview.yml', 'site.zip.b64']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: aiai-approved-static-preview
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract only the already-public approved website
+        run: |
+          python3 - <<'PY'
+          import base64, io, json, pathlib, re, zipfile, hashlib
+          expected={'index.html','config.js','styles.css','script.js','motion.js','mobile-v5.css','v5-polish.css','welcome-v5.js','assets/hero-dinner.avif','assets/handheld-pouch.avif','assets/daily-sachet.avif','assets/original-89afe731e62b.avif','assets/pouch-collection.avif'}
+          archive=zipfile.ZipFile(io.BytesIO(base64.b64decode(''.join(pathlib.Path('site.zip.b64').read_text().split()),validate=True)))
+          assert archive.testzip() is None
+          files={}
+          for item in archive.infolist():
+              if item.is_dir():continue
+              p=pathlib.PurePosixPath(item.filename)
+              assert not p.is_absolute() and '..' not in p.parts
+              name=str(p)
+              if name.startswith('site/'):name=name[5:]
+              if name in expected:
+                  assert name not in files
+                  files[name]=archive.read(item)
+          assert set(files)==expected, sorted(files)
+          html=files['index.html'].decode('utf-8')
+          badge=re.search(r'<button\b[^>]*class="v5-hero-badge"[^>]*>.*?</button>',html,re.S)
+          assert badge and '甜蜜優惠' in badge.group() and '點我刮開' in badge.group() and '85' not in badge.group()
+          assert html.count('data-scratch-card')==4
+          assert 'https://lin.ee/mO5jVM6' in html
+          assert 'REPLACE_ME' not in html
+          assert 'setTimeout' in files['welcome-v5.js'].decode()
+          assert hashlib.sha256(files['assets/hero-dinner.avif']).hexdigest()=='0bbe5d18941e4973ee630f70bea4b04f8e5effd7e7e5787671bda0ce283c328e'
+          for name,data in files.items():
+              p=pathlib.Path('site')/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
+          pathlib.Path('site/.nojekyll').write_text('')
+          print('APPROVED_SITE_EXTRACTED',json.dumps({n:len(b) for n,b in files.items()}))
+          PY
+      - name: Save the static files in the existing public preview repository
+        id: save
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- site
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish approved AIAI gummy static website without design changes'
+            git push origin HEAD:main
+          fi
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "url=https://rawcdn.githack.com/lvicvicvicvic/AI/$SHA/site/index.html" >> "$GITHUB_OUTPUT"
+      - name: Record fixed preview address
+        env:
+          PUBLIC_URL: ${{ steps.save.outputs.url }}
+          PUBLIC_SHA: ${{ steps.save.outputs.sha }}
+        run: |
+          mkdir -p delivery
+          python3 - <<'PY'
+          import json,os,pathlib
+          result={'siteUrl':os.environ['PUBLIC_URL']+'?offer=play','commit':os.environ['PUBLIC_SHA'],'hosting':'rawcdn.githack.com','expiryConfigured':False,'checkoutConnected':False,'status':'awaiting-browser-verification'}
+          pathlib.Path('delivery/address.json').write_text(json.dumps(result,indent=2))
+          print('FIXED_PREVIEW_ADDRESS',json.dumps(result))
+          PY
+      - name: Install browser engines
+        run: |
+          python3 -m pip -q install playwright
+          python3 -m playwright install --with-deps webkit chromium > /tmp/aiai-browser-install.log 2>&1
+      - name: Test public CDN with ordinary mobile browsers
+        env:
+          PUBLIC_URL: ${{ steps.save.outputs.url }}
+        run: |
+          python3 - <<'PY'
+          import json,os,pathlib,time
+          from playwright.sync_api import sync_playwright
+          results=[]
+          with sync_playwright() as p:
+              for engine in ['webkit','chromium']:
+                  b=getattr(p,engine).launch()
+                  ctx=b.new_context(viewport={'width':390,'height':844},device_scale_factor=2,is_mobile=True,has_touch=True)
+                  page=ctx.new_page();errors=[]
+                  page.on('pageerror',lambda e:errors.append(str(e)))
+                  response=page.goto(os.environ['PUBLIC_URL']+'?offer=play',wait_until='domcontentloaded',timeout=90000)
+                  page.wait_for_timeout(1500)
+                  if page.locator('#aiai-welcome-offer').count()==0:
+                      pathlib.Path('delivery/'+engine+'-entry.html').write_text(page.content())
+                      pathlib.Path('delivery/'+engine+'-entry-text.txt').write_text(page.locator('body').inner_text())
+                      page.screenshot(path='delivery/'+engine+'-entry.png')
+                      results.append({'engine':engine,'http':response.status,'appLoaded':False,'entryText':page.locator('body').inner_text()[:1800]})
+                      b.close();continue
+                  page.wait_for_selector('#aiai-welcome-offer[open]',timeout=15000)
+                  page.screenshot(path='delivery/'+engine+'-scratch.png')
+                  assert page.locator('#aiai-welcome-offer input').count()==0
+                  for i in range(3):page.locator('[data-scratch-card]').nth(i).click()
+                  page.wait_for_selector('[data-offer-result]:visible')
+                  assert page.locator('[data-offer-line]').get_attribute('href')=='https://lin.ee/mO5jVM6'
+                  page.locator('[data-welcome-close]').click()
+                  page.wait_for_function('!document.documentElement.classList.contains("v5-dialog-open")')
+                  assert page.locator('.v5-hero-badge').inner_text().splitlines()==['甜蜜優惠','點我刮開']
+                  assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+                  page.screenshot(path='delivery/'+engine+'-hero.png')
+                  results.append({'engine':engine,'http':response.status,'appLoaded':True,'scratchVerified':True,'errors':errors})
+                  b.close()
+          pathlib.Path('delivery/browser-results.json').write_text(json.dumps(results,ensure_ascii=False,indent=2))
+          print('PUBLIC_BROWSER_RESULTS',json.dumps(results,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-fixed-preview-verification
+          path: delivery
+          retention-days: 30
