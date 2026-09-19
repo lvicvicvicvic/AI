@@ -1,0 +1,6 @@
+.v5-scratch-card{touch-action:none}.v5-scratch-reward strong{font-size:inherit;line-height:inherit}.v5-hero-media .v5-hero-photo{margin:0}.v5-welcome-dialog .v5-art-pouch{aspect-ratio:auto;object-fit:contain;max-height:none}.v5-welcome-dialog .v5-art-heart{overflow:visible}.v5-welcome-dialog :focus-visible{outline:3px solid #8c304c;outline-offset:3px}.v5-welcome-dialog h2:focus{outline:none}.v5-header .header-shop{white-space:nowrap}.v5-welcome-dialog .v5-result-kicker{font-weight:800}.v5-scratch-progress{letter-spacing:.02em}@media(max-width:767px){.v5-welcome-shell{padding-bottom:max(14px,env(safe-area-inset-bottom));}.v5-home-hero .hero-stats{margin-top:36px}}
+
+/* v5.3: wording only; badge size, position, shape, colour and rotation unchanged. */
+.v5-hero-badge strong.v53-badge-title{font-size:15px;line-height:1.5;font-weight:800;letter-spacing:.03em;white-space:nowrap}
+.v5-hero-badge small.v53-badge-hint{font-size:11px;line-height:1.5;letter-spacing:.03em;white-space:nowrap}
+@media(min-width:992px){.v5-hero-badge strong.v53-badge-title{font-size:18px}.v5-hero-badge small.v53-badge-hint{font-size:13px}}
