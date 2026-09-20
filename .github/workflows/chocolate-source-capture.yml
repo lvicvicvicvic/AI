@@ -1,0 +1,70 @@
+name: Capture original chocolate homepage
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/chocolate-source-capture.yml']
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 -m pip -q install playwright beautifulsoup4 requests
+          python3 -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1
+      - name: Capture public text images and DOM without submitting forms
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,requests,re,concurrent.futures,hashlib,urllib.parse
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('chocolate-capture');out.mkdir(exist_ok=True)
+          url='https://www.aiai.com.tw/'
+          with sync_playwright() as p:
+              b=p.chromium.launch()
+              page=b.new_page(viewport={'width':390,'height':844},device_scale_factor=2,is_mobile=True,has_touch=True)
+              response=page.goto(url,wait_until='domcontentloaded',timeout=90000)
+              assert response.status==200
+              (out/'original-response.html').write_text(response.text())
+              page.wait_for_timeout(3500)
+              for y in range(0,int(page.evaluate('document.documentElement.scrollHeight')),600):
+                  page.evaluate('(y)=>scrollTo(0,y)',y);page.wait_for_timeout(70)
+              page.wait_for_timeout(1800)
+              page.evaluate('scrollTo(0,0)');page.wait_for_timeout(500)
+              (out/'rendered.html').write_text(page.content())
+              (out/'visible-text.txt').write_text(page.locator('body').inner_text())
+              page.screenshot(path=str(out/'original-mobile.png'))
+              images=page.locator('img').evaluate_all('(es)=>es.map(e=>({src:e.getAttribute("src"),currentSrc:e.currentSrc,srcset:e.getAttribute("srcset"),alt:e.alt,width:e.naturalWidth,height:e.naturalHeight}))')
+              backgrounds=page.locator('body *').evaluate_all('(es)=>es.map(e=>({tag:e.tagName,id:e.id,cls:e.className,url:getComputedStyle(e).backgroundImage})).filter(x=>x.url.includes("url("))')
+              (out/'images.json').write_text(json.dumps(images,ensure_ascii=False,indent=2))
+              (out/'backgrounds.json').write_text(json.dumps(backgrounds,ensure_ascii=False,indent=2))
+              b.close()
+          # Preserve public original image bytes for accurate offline previews.
+          urls=set()
+          for im in images:
+              for k in ['src','currentSrc']:
+                  u=im.get(k)
+                  if u and u.startswith(('http://','https://','//')):urls.add(urllib.parse.urljoin(url,u))
+          for bg in backgrounds:
+              for u in re.findall(r'url\([\"\']?(.*?)[\"\']?\)',bg['url']):
+                  if u.startswith(('http://','https://','//')):urls.add(urllib.parse.urljoin(url,u))
+          def get(u):
+              try:
+                  r=requests.get(u,timeout=35,headers={'User-Agent':'Mozilla/5.0','Referer':url});r.raise_for_status()
+                  assert r.headers.get('content-type','').startswith('image/')
+                  ext=pathlib.PurePosixPath(urllib.parse.urlparse(u).path).suffix or '.img'
+                  name='assets/'+hashlib.sha256(u.encode()).hexdigest()[:16]+ext
+                  path=out/name;path.parent.mkdir(exist_ok=True);path.write_bytes(r.content)
+                  return {'url':u,'path':name,'sha256':hashlib.sha256(r.content).hexdigest(),'bytes':len(r.content),'mime':r.headers.get('content-type')}
+              except Exception as e:return {'url':u,'error':str(e)}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:assets=list(pool.map(get,sorted(urls)))
+          (out/'asset-map.json').write_text(json.dumps(assets,ensure_ascii=False,indent=2))
+          print('CAPTURED',len(images),'image nodes',len(assets),'assets',len((out/'rendered.html').read_bytes()),'DOM bytes')
+          print('ASSET_ERRORS',json.dumps([a for a in assets if 'error' in a]))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chocolate-original-source
+          path: chocolate-capture
+          retention-days: 30
