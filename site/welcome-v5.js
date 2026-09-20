@@ -29,8 +29,8 @@ function draw(card){
  const w=card.clientWidth,h=card.clientHeight,dpr=Math.min(devicePixelRatio||1,2);
  canvas.width=w*dpr;canvas.height=h*dpr;
  ctx.setTransform(dpr,0,0,dpr,0,0);
- ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
- ctx.fillStyle='#8c304c';ctx.font=`900 ${Math.min(38,w*.49)}px Arial`;
+ ctx.fillStyle='#e8b8b7';ctx.fillRect(0,0,w,h);
+ ctx.fillStyle='#111111';ctx.font=`900 ${Math.min(38,w*.49)}px Arial`;
  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('?',w/2,h/2+2);
 }
 cards.forEach(card=>{
