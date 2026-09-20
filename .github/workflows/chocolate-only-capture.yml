@@ -1,0 +1,66 @@
+name: Capture confirmed chocolate source
+on:
+  push:
+    branches: ['chocolate-only/black-pink-live-20260920']
+    paths: ['.github/workflows/chocolate-only-capture.yml']
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python -m pip -q install requests beautifulsoup4 playwright
+          python -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1
+      - name: Capture public chocolate page without submitting anything
+        run: |
+          python - <<'PY'
+          import pathlib,requests,json,shutil,concurrent.futures,urllib.parse
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('chocolate-source');out.mkdir(exist_ok=True)
+          shutil.copytree('chocolate-preview',out/'existing-chocolate-copy')
+          url='https://www.aiai.com.tw/'
+          r=requests.get(url,timeout=40);r.raise_for_status()
+          (out/'live-response.html').write_text(r.text)
+          assert 'AIAI CHOCOLATE' in r.text
+          with sync_playwright() as p:
+              b=p.chromium.launch()
+              c=b.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,device_scale_factor=1)
+              page=c.new_page();page.goto(url,wait_until='domcontentloaded',timeout=60000)
+              page.wait_for_timeout(2200)
+              page.locator('#aiai').wait_for()
+              assert 'AIAI CHOCOLATE' in page.locator('#aiai').inner_text()
+              (out/'live-rendered.html').write_text(page.content())
+              (out/'live-root.html').write_text(page.locator('#aiai').evaluate('(e)=>e.outerHTML'))
+              (out/'live-text.txt').write_text(page.locator('#aiai').inner_text())
+              page.screenshot(path=str(out/'original-mobile.png'))
+              styles=page.locator('link[rel=stylesheet]').evaluate_all('(es)=>es.map(e=>e.href)')
+              (out/'stylesheets.json').write_text(json.dumps(styles))
+              metrics=page.locator('#aiai, #aiai > *, #aiai-sku, .site-header, header, nav').evaluate_all('(es)=>es.map(e=>{let c=getComputedStyle(e),r=e.getBoundingClientRect();return {tag:e.tagName,id:e.id,cls:e.className,text:e.innerText?.slice(0,80),bg:c.backgroundColor,color:c.color,width:r.width,height:r.height}})')
+              (out/'source-metrics.json').write_text(json.dumps(metrics,ensure_ascii=False,indent=2))
+              for y in range(0,int(page.evaluate('document.documentElement.scrollHeight')),700):
+                  page.evaluate('(y)=>scrollTo(0,y)',y);page.wait_for_timeout(50)
+              page.evaluate('scrollTo(0,0)');page.wait_for_timeout(300)
+              page.screenshot(path=str(out/'original-mobile-full.png'),full_page=True)
+              d=b.new_page(viewport={'width':1440,'height':1000})
+              d.goto(url,wait_until='domcontentloaded',timeout=60000);d.wait_for_timeout(1600)
+              d.screenshot(path=str(out/'original-desktop.png'))
+              (out/'desktop-rendered.html').write_text(d.content())
+              b.close()
+          def get_css(pair):
+              i,u=pair
+              try:
+                  rr=requests.get(u,timeout=25);rr.raise_for_status()
+                  (out/('external-'+str(i)+'.css')).write_text(rr.text)
+              except Exception as e:print('CSS_FETCH',i,str(e))
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:list(pool.map(get_css,enumerate(styles)))
+          print('CONFIRMED_CHOCOLATE_SOURCE',url,'bytes',len(r.content),'styles',len(styles))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chocolate-confirmed-source
+          path: chocolate-source
+          retention-days: 3
