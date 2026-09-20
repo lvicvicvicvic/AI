@@ -1,0 +1,181 @@
+name: Publish AIAI chocolate conversion V2
+on:
+  push:
+    branches: [preview/chocolate-conversion-v2-20260921]
+    paths: ['.github/workflows/chocolate-conversion-v2-publish.yml']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install browser checks
+        run: |
+          python3 -m pip -q install requests playwright cryptography
+          python3 -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1
+          sudo apt-get install -y fonts-noto-cjk > /tmp/fonts-install.log 2>&1
+      - name: Reconstruct, publish and verify the separate preview
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,base64,lzma,hashlib,subprocess,mimetypes,concurrent.futures,time,os
+          import requests
+          from cryptography.hazmat.primitives import serialization,hashes
+          from cryptography.hazmat.primitives.asymmetric import padding
+          from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('public-result');out.mkdir(exist_ok=True)
+          site=out/'site';site.mkdir(exist_ok=True)
+          payload=''.join(p.read_text().strip() for p in sorted(pathlib.Path('chocolate-conversion-v2-build').glob('payload-*.b64')))
+          digest=hashlib.sha256(payload.encode()).hexdigest()
+          assert digest=='bc1fd090a99d83463db634786f9534db62b411ddfadb891588a5092722016e3a',('Payload checksum',digest,len(payload))
+          for name,content in json.loads(lzma.decompress(base64.b64decode(payload))).items():
+              assert not pathlib.PurePosixPath(name).is_absolute() and '..' not in pathlib.PurePosixPath(name).parts
+              path=site/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(content,encoding='utf-8')
+          manifest=json.loads((site/'build-manifest.json').read_text())
+          for name,expected in manifest['layoutCSSUnchanged'].items():
+              data=subprocess.check_output(['git','show','b46f100090513a66906df059f1678649faf6563c:site/'+name])
+              assert hashlib.sha256(data).hexdigest()==expected,name
+              (site/name).write_bytes(data)
+          for asset in manifest['productAssets']:
+              data=pathlib.Path(asset['sourceFile']).read_bytes()
+              assert hashlib.sha256(data).hexdigest()==asset['sha256'],asset['path']
+              path=site/asset['path'];path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
+          html=(site/'index.html').read_text()
+          assert '不只訂餐廳' in html and 'v5-hero-grid' in html and 'v2-pack-grid' in html
+          assert not any(t in html for t in ['每日親密軟糖','DATE NIGHT GUMMIES','黑櫻桃','覆盆莓','28 PACKS','65%'])
+          # Publish only site assets, never private claim material or captured storefront scripts.
+          files=[]
+          for f in sorted(site.rglob('*')):
+              if not f.is_file():continue
+              rel=f.relative_to(site).as_posix();mime=mimetypes.guess_type(rel)[0] or 'application/octet-stream'
+              if rel.endswith('.avif'):mime='image/avif'
+              if rel.endswith('.js'):mime='text/javascript; charset=utf-8'
+              if rel.endswith('.html'):mime='text/html; charset=utf-8'
+              if rel.endswith('.css'):mime='text/css; charset=utf-8'
+              files.append({'path':rel,'size':f.stat().st_size,'contentType':mime,'hash':hashlib.sha256(f.read_bytes()).hexdigest()})
+          headers={'X-HereNow-Client':'chatgpt/chocolate-conversion-v2','Content-Type':'application/json'}
+          r=requests.post('https://here.now/api/v1/publish',headers=headers,json={'files':files,'displayName':'AIAI 巧克力｜黑粉轉化優化 V2','displayDescription':'First-version visual design, upfront pricing, simplified chocolate selection. Independent preview; no payments.'},timeout=60)
+          r.raise_for_status();created=r.json()
+          for field in ['claimToken','claimUrl']:
+              if created.get(field):print('::add-mask::'+created[field],flush=True)
+          pub=serialization.load_pem_public_key(b'''-----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAie/xms55Wda/ztWrUXEY
+          qpOTiTWGLVNsnWy/64hfpMlr9/qRojuixj7Irwd58BIgjUbr/1rNz5n/qrjyCM9o
+          Q0Wo3zJiw5EJjurWeLV1eFDLbeYl40lXXNdhml28td09YVFs/j/BjV7vwl2yhdld
+          hg0jZiEDycIDK5woQGwtMPsV9iAklsYpcYmlCeyOvWRgZgfxlqrCRmGIhIk9k01u
+          sy0XVeZptmwa6JzP9EVEXX2SO+LZpXasRD5tXWhfbTjhxRXvVPnLoQz+TmuK6fZm
+          mdizrG8HKDDvRhJmxGLCpopPN566RKscxy9TxP2s6fTnbS6NEvIEJt6zYiHlDea/
+          AwIDAQAB
+          -----END PUBLIC KEY-----''')
+          key=AESGCM.generate_key(bit_length=256);nonce=os.urandom(12)
+          encrypted=AESGCM(key).encrypt(nonce,json.dumps(created).encode(),None)
+          wrapped=pub.encrypt(key,padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
+          (out/'claim-encrypted.json').write_text(json.dumps({'key':base64.b64encode(wrapped).decode(),'nonce':base64.b64encode(nonce).decode(),'data':base64.b64encode(encrypted).decode()}))
+          upload=created['upload']
+          def put(item):
+              f=site/item['path'];h=item.get('headers') or {'Content-Type':next(x['contentType'] for x in files if x['path']==item['path'])}
+              for attempt in range(3):
+                  try:
+                      rr=requests.put(item['url'],headers=h,data=f.read_bytes(),timeout=60);rr.raise_for_status();return item['path']
+                  except Exception:
+                      if attempt==2:raise
+                      time.sleep(2)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:list(pool.map(put,upload['uploads']))
+          finalize=upload.get('finalizeUrl') or created.get('finalizeUrl')
+          rr=requests.post(finalize,headers=headers,json={'versionId':upload['versionId']},timeout=60);rr.raise_for_status();final=rr.json()
+          assert final.get('success') is True,'Publish did not finalize'
+          url=final.get('siteUrl') or created['siteUrl']
+          report={'siteUrl':url,'expiresAt':created.get('expiresAt'),'publishStatus':final.get('publishStatus'),'buildCommit':os.getenv('GITHUB_SHA'),'layoutSource':manifest['layoutSource'],'contentSource':manifest['contentSource'],'checkoutConnected':False,'productionSiteModified':False,'filesCount':len(files),'verified':False,'tests':[]}
+          def save():
+              (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          save();print('PUBLIC_SITE_URL',url,flush=True)
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for name,width,height,mobile in [('mobile',390,844,True),('desktop',1440,1000,False)]:
+                  context=browser.new_context(viewport={'width':width,'height':height},device_scale_factor=1,is_mobile=mobile,has_touch=mobile)
+                  page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));test={'device':name}
+                  try:
+                      response=page.goto(url,wait_until='networkidle',timeout=60000)
+                      assert response.status==200,response.status
+                      page.wait_for_timeout(1100)
+                      assert '不只訂餐廳' in page.locator('h1').inner_text()
+                      assert not page.locator('#aiai-welcome-offer').is_visible(),'Unexpected auto popup'
+                      assert not any(t in page.locator('body').inner_text() for t in ['軟糖','黑櫻桃','覆盆莓','D3','定期補貨'])
+                      assert page.locator('.v5-hero-action > .v5-offer-button').get_attribute('href')=='#buy'
+                      page.screenshot(path=str(out/('public-'+name+'-home.png')))
+                      metrics=page.evaluate("""()=>({buyY:document.querySelector('#buy').getBoundingClientRect().top+scrollY,selectionY:document.querySelector('.v2-pack-grid').getBoundingClientRect().top+scrollY,heroPriceY:document.querySelector('.v2-hero-price').getBoundingClientRect().top+scrollY,height:document.documentElement.scrollHeight})""")
+                      if mobile:
+                          assert metrics['heroPriceY']<844,metrics
+                          assert metrics['selectionY']<2600,metrics
+                      colors=page.evaluate("""()=>Object.fromEntries(['.hero.v5-home-hero','.v5-hero-action > .v5-offer-button'].map(s=>{let c=getComputedStyle(document.querySelector(s));return[s,c.backgroundColor]}))""")
+                      assert colors['.hero.v5-home-hero']=='rgb(17, 17, 17)',colors
+                      assert colors['.v5-hero-action > .v5-offer-button']=='rgb(232, 184, 183)',colors
+                      page.locator('#buy').scroll_into_view_if_needed();page.wait_for_timeout(650)
+                      page.screenshot(path=str(out/('public-'+name+'-buy.png')))
+                      page.locator('.v2-pack-grid').scroll_into_view_if_needed();page.wait_for_timeout(450)
+                      page.screenshot(path=str(out/('public-'+name+'-selection.png')))
+                      for qty,price in [('3','NT$948'),('12','NT$1,698'),('24','NT$2,598'),('6','NT$998')]:
+                          page.locator('[data-pack="'+qty+'"]').click()
+                          assert page.locator('[data-total]').inner_text()==price
+                      page.locator('[data-lube]').check();assert page.locator('[data-total]').inner_text()=='NT$1,317'
+                      page.locator('[data-qty-plus]').click();assert page.locator('[data-total]').inner_text()=='NT$2,121'
+                      page.locator('[data-review-selection]').click();page.locator('[data-summary-dialog]').wait_for(state='visible')
+                      assert '2 組' in page.locator('[data-summary-items]').inner_text()
+                      assert 'NT$2,121' in page.locator('[data-summary-totals]').inner_text()
+                      assert '尚未串接' in page.locator('.v2-summary-boundary').inner_text()
+                      assert page.locator('[data-official-shop]').get_attribute('href')=='https://www.aiai.com.tw/#aiai-sku'
+                      page.screenshot(path=str(out/('public-'+name+'-summary.png')))
+                      page.keyboard.press('Escape');page.locator('[data-summary-dialog]').wait_for(state='hidden')
+                      page.reload(wait_until='networkidle');page.wait_for_timeout(700)
+                      assert page.locator('[data-total]').inner_text()=='NT$2,121','Selection lost on reload'
+                      assert page.locator('[data-lube]').is_checked()
+                      assert page.locator('[data-group-count]').inner_text()=='2'
+                      page.locator('[data-qty-minus]').click();page.locator('[data-lube]').uncheck()
+                      assert page.locator('[data-total]').inner_text()=='NT$998'
+                      assert page.locator('[data-gallery-thumb]').count()==5
+                      page.locator('[data-gallery-thumb="2"]').click()
+                      assert 'is-active' in page.locator('[data-slide="2"]').get_attribute('class')
+                      page.locator('[data-nutrition-open]').first.click()
+                      assert page.locator('[data-nutrition-modal]').get_attribute('aria-hidden')=='false'
+                      page.keyboard.press('Escape');assert page.locator('[data-nutrition-modal]').get_attribute('aria-hidden')=='true'
+                      faq=page.locator('#faq .accordion button').first;faq.click();assert faq.get_attribute('aria-expanded')=='true'
+                      page.screenshot(path=str(out/('public-'+name+'-faq.png')))
+                      page.locator('#reviews').scroll_into_view_if_needed();page.wait_for_timeout(600)
+                      page.screenshot(path=str(out/('public-'+name+'-reviews.png')))
+                      if mobile:
+                          page.locator('[data-menu-open]').click();assert page.locator('[data-menu-drawer]').is_visible()
+                          page.locator('[data-menu-drawer] [data-menu-close]').click();page.wait_for_timeout(400)
+                      page.locator('img').evaluate_all("es=>es.forEach(e=>e.loading='eager')")
+                      page.wait_for_function('[...document.images].every(i=>i.complete && i.naturalWidth>0)',timeout=20000)
+                      assert not page.evaluate('Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)>innerWidth+1')
+                      page.evaluate('scrollTo(0,0)');page.wait_for_timeout(450)
+                      page.locator('.v5-hero-badge').click();page.locator('#aiai-welcome-offer').wait_for(state='visible');page.wait_for_timeout(400)
+                      page.screenshot(path=str(out/('public-'+name+'-welcome.png')))
+                      for i in range(3):page.locator('[data-scratch-card]').nth(i).click()
+                      page.locator('[data-offer-result]').wait_for(state='visible');page.wait_for_timeout(400)
+                      assert page.locator('[data-offer-shop]').get_attribute('href')=='#buy'
+                      assert page.locator('[data-offer-line]').count()==0
+                      page.screenshot(path=str(out/('public-'+name+'-reward.png')))
+                      page.locator('[data-offer-shop]').click();page.locator('#aiai-welcome-offer').wait_for(state='hidden')
+                      assert not errors,errors
+                      test.update(passed=True,httpStatus=response.status,directAnonymousAccess=True,chocolateOnly=True,noDefaultPopup=True,primaryCTAIsBuy=True,variantPrices=True,addonAndDiscountTotals=True,selectionPersistedAcrossReload=True,gallery=True,completeLabel=True,faq=True,scratchOptionalReturnsToBuy=True,checkoutLimitationVisible=True,metrics=metrics,colors=colors,brokenImages=[],horizontalOverflow=False,jsErrors=errors)
+                  except Exception as e:
+                      test.update(passed=False,error=str(e),jsErrors=errors)
+                      page.screenshot(path=str(out/('public-'+name+'-error.png')))
+                  report['tests'].append(test);save();context.close()
+              browser.close()
+          report['verified']=all(t.get('passed') for t in report['tests'])
+          save();print(json.dumps(report,ensure_ascii=False,indent=2),flush=True)
+          assert report['verified'],'Inspect public report before delivery'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-chocolate-conversion-v2-public
+          path: public-result
+          retention-days: 7
