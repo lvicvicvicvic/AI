@@ -1,0 +1,20 @@
+{
+  "siteUrl": "https://walnut-ferry-hdek.here.now/",
+  "sourceCommit": "1fe4ee36080df7bffe3df30a4db6b1f415492635",
+  "scope": "Separate color-only copy of site; black and original AIAI pink; no changes to original content, images, layout or interactions.",
+  "hosting": "here.now",
+  "state": "live",
+  "ownership": "anonymous",
+  "persistence": "expiring",
+  "expiresAt": "2026-09-21T11:45:20.207Z",
+  "directPublicEntry": true,
+  "githackInterstitial": false,
+  "verification": {
+    "workflowRunId": 35508780302,
+    "jobId": 106072952230,
+    "conclusion": "success",
+    "tested": ["Chromium mobile 390x844", "Chromium desktop 1440x1000", "WebKit mobile 390x844"],
+    "checks": ["HTTP 200 for all 13 site resources", "CSS, JS and image bytes match source", "Black and AIAI pink applied", "Scratch offer automatically opens", "Three cards reveal offer", "Original LINE destination preserved", "Horizontal mobile lazy images load", "FAQ expands", "No horizontal overflow", "No JavaScript page errors"]
+  },
+  "claimLinkHandling": "Private ownership link delivered to the user only; not stored in this public repository."
+}
