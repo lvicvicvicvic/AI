@@ -1,0 +1,85 @@
+name: Verify and deliver chocolate redesign preview
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/chocolate-preview-finish.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: aiai-chocolate-redesign-v1
+          run-id: 35504116338
+          github-token: ${{ github.token }}
+          path: verified-build
+      - name: Keep original account link destinations and isolate hosting consent requests
+        run: |
+          python3 - <<'PY'
+          import pathlib,hashlib,json,shutil
+          p=pathlib.Path('chocolate-preview/index.html');h=p.read_text()
+          replacements={'href="/login"':'href="https://www.aiai.com.tw/login"','href="/regis"':'href="https://www.aiai.com.tw/regis"'}
+          for old,new in replacements.items():
+              assert old in h;h=h.replace(old,new)
+          p.write_text(h)
+          pathlib.Path('work').mkdir(exist_ok=True)
+          test=pathlib.Path('verified-build/work/test.py').read_text()
+          needle="            page.wait_for_selector('#aiai-sku',timeout=30000);page.wait_for_timeout(1200)"
+          assert needle in test
+          test=test.replace(needle,"            entry_requests=list(mutations);mutations.clear()\n"+needle)
+          test=test.replace("'postRequests':mutations,'passed':True","'hostingNoticeRequests':entry_requests,'postRequests':mutations,'passed':True")
+          pathlib.Path('work/test.py').write_text(test)
+          pathlib.Path('delivery').mkdir(exist_ok=True)
+          shutil.copyfile('verified-build/delivery/local-tests.json','delivery/local-tests.json')
+          a=json.loads(pathlib.Path('chocolate-preview/content-audit.json').read_text())
+          assert a['allCapturedImageBytesIdentical'] and a['missingOrRewrittenTextNodes']=={}
+          print('COPY_IMAGES_UNCHANGED; LOGIN_AND_REGISTRATION_KEEP_ORIGINAL_DESTINATION')
+          PY
+          python3 -m pip -q install playwright
+          python3 -m playwright install --with-deps chromium webkit > /tmp/browser-install.log 2>&1
+      - name: Store scoped link correction and fixed preview address
+        id: publish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add chocolate-preview/index.html
+          git commit -m 'Preserve original login and registration destinations on independent preview'
+          git push origin HEAD:main
+          SHA=$(git rev-parse HEAD)
+          echo "url=https://rawcdn.githack.com/lvicvicvicvic/AI/$SHA/chocolate-preview/index.html" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+      - name: Verify live mobile WebKit and Chromium after ordinary consent click
+        env:
+          PREVIEW_URL: ${{ steps.publish.outputs.url }}
+        run: python3 work/test.py
+      - name: Record verified delivery only after live tests pass
+        env:
+          PREVIEW_URL: ${{ steps.publish.outputs.url }}
+          PREVIEW_SHA: ${{ steps.publish.outputs.sha }}
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,os
+          a=json.loads(pathlib.Path('chocolate-preview/content-audit.json').read_text())
+          tests=json.loads(pathlib.Path('delivery/live-tests.json').read_text())
+          assert len(tests)==4 and all(t['passed'] and not t['postRequests'] for t in tests)
+          result={'siteUrl':os.environ['PREVIEW_URL'],'commit':os.environ['PREVIEW_SHA'],'verified':True,'expiryConfigured':False,'productionSiteModified':False,'gummySiteModified':False,'checkoutConnected':False,'contentAudit':a,'tests':tests}
+          for name in ['CHOCOLATE_PREVIEW_STATUS.json','delivery/status.json']:
+              pathlib.Path(name).write_text(json.dumps(result,ensure_ascii=False,indent=2))
+          print('VERIFIED_CHOCOLATE_PREVIEW',os.environ['PREVIEW_URL'])
+          PY
+          git add CHOCOLATE_PREVIEW_STATUS.json
+          git commit -m 'Record verified live chocolate redesign delivery'
+          git push origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chocolate-redesign-delivered
+          path: |
+            chocolate-preview
+            delivery
+          retention-days: 30
