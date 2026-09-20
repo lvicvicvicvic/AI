@@ -1,0 +1,159 @@
+name: Publish verified chocolate black pink preview
+on:
+  push:
+    branches: ['chocolate-only/black-pink-live-20260920']
+    paths: ['.github/workflows/chocolate-only-publish.yml']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install preview verification dependencies
+        run: |
+          python -m pip -q install requests beautifulsoup4 playwright cryptography
+          python -m playwright install --with-deps chromium > /tmp/chocolate-browser.log 2>&1
+      - name: Build chocolate-only preview, verify and publish separately
+        run: |
+          python - <<'PY'
+          import pathlib,json,requests,zlib,base64,hashlib,subprocess,sys,concurrent.futures,mimetypes,threading,http.server,functools,time,os
+          from playwright.sync_api import sync_playwright
+          from cryptography.hazmat.primitives import serialization,hashes
+          from cryptography.hazmat.primitives.asymmetric import padding
+          from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+          work=pathlib.Path('chocolate-color-work');work.mkdir(exist_ok=True)
+          src=work/'source';src.mkdir(exist_ok=True)
+          result=pathlib.Path('chocolate-public-result');result.mkdir(exist_ok=True)
+          encoded=pathlib.Path('chocolate-color-input.b64').read_text().strip().replace('YouVJmRnBD7BKW','YouVJnRBD7BKW')
+          decoded=zlib.decompress(base64.b64decode(encoded))
+          assert hashlib.sha256(decoded).hexdigest()=='65d32ec1dfc8f503638ea263e755bd7bd3cca513f9f39ce8e5b86e3919efba4e','Build input checksum mismatch'
+          for name,text in json.loads(decoded).items():
+              f=work/name;f.parent.mkdir(parents=True,exist_ok=True);f.write_text(text)
+          url='https://www.aiai.com.tw/'
+          source_response=requests.get(url,timeout=40);source_response.raise_for_status()
+          (src/'live-response.html').write_text(source_response.text)
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              page=browser.new_page(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,timezone_id='Asia/Taipei')
+              page.goto(url,wait_until='domcontentloaded',timeout=60000);page.wait_for_timeout(1700)
+              page.locator('#aiai').wait_for()
+              assert 'AIAI CHOCOLATE' in page.locator('#aiai').inner_text()
+              (src/'live-rendered.html').write_text(page.content())
+              page.screenshot(path=str(result/'original-chocolate-mobile.png'))
+              sheets=page.locator('link[rel=stylesheet]').evaluate_all('(es)=>es.map(e=>e.href)')
+              browser.close()
+          def css(pair):
+              i,u=pair;r=requests.get(u,timeout=40);r.raise_for_status();(src/('external-'+str(i)+'.css')).write_text(r.text)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:list(pool.map(css,enumerate(sheets)))
+          sw=requests.get('https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js',timeout=40);sw.raise_for_status();(src/'swiper.min.js').write_text(sw.text)
+          site=work/'site'
+          subprocess.run([sys.executable,str(work/'build.py'),str(src),'chocolate-preview',str(site)],check=True)
+          missing=json.loads((site/'source-assets.json').read_text())
+          def asset(pair):
+              name,u=pair;r=requests.get(u,timeout=40);r.raise_for_status();assert r.headers.get('content-type','').startswith('image/');(site/name).write_bytes(r.content)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:list(pool.map(asset,missing.items()))
+          class Quiet(http.server.SimpleHTTPRequestHandler):
+              def log_message(self,*a):pass
+          server=http.server.ThreadingHTTPServer(('127.0.0.1',8765),functools.partial(Quiet,directory=str(site)))
+          threading.Thread(target=server.serve_forever,daemon=True).start()
+          report={'sourceUrl':url,'product':'AIAI CHOCOLATE','gummyTemplateUsed':False,'productionModified':False,'verified':False,'tests':[]}
+          def verify(base,phase):
+              tests=[]
+              with sync_playwright() as p:
+                  browser=p.chromium.launch()
+                  for device,w,h in [('mobile',390,844),('desktop',1440,1000)]:
+                      context=browser.new_context(viewport={'width':w,'height':h},is_mobile=device=='mobile',has_touch=device=='mobile',timezone_id='Asia/Taipei')
+                      page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+                      response=page.goto(base,wait_until='domcontentloaded',timeout=60000)
+                      assert response.status==200
+                      page.wait_for_timeout(1100)
+                      assert page.locator('#aiai h1').inner_text()=='夜晚甜蜜的祕方，從這片開始'
+                      text=page.locator('#aiai').inner_text()
+                      assert 'AIAI CHOCOLATE' in text and '每日親密軟糖' not in text and 'GUMMIES' not in text
+                      assert page.locator('#aiai img').count()==44
+                      page.screenshot(path=str(result/(phase+'-'+device+'-home.png')))
+                      page.locator('img').evaluate_all('(es)=>es.forEach(e=>e.loading="eager")')
+                      page.wait_for_function('Array.from(document.images).every(e=>e.complete&&e.naturalWidth>0)',timeout=25000)
+                      prices={}
+                      for key in ['3','12','24','6lube','6']:
+                          page.locator('#card'+key).click();page.wait_for_timeout(120)
+                          prices[key]=page.locator('#aiai-sku #price').inner_text()
+                          page.wait_for_function('document.querySelector("#aiai-sku #img").complete&&document.querySelector("#aiai-sku #img").naturalWidth>0')
+                      assert '998' in prices['6'] and '1,698' in prices['12'],prices
+                      page.locator('#aiai-sku').scroll_into_view_if_needed();page.wait_for_timeout(300)
+                      page.screenshot(path=str(result/(phase+'-'+device+'-buy.png')))
+                      page.locator('#aiai-sku #cta').click();page.wait_for_timeout(180)
+                      assert page.locator('#skuModal').evaluate('(e)=>e.classList.contains("show")')
+                      page.screenshot(path=str(result/(phase+'-'+device+'-addons.png')))
+                      page.locator('#sheetClose').click();page.wait_for_timeout(180)
+                      assert not page.locator('#skuModal').evaluate('(e)=>e.classList.contains("show")')
+                      page.locator('#btn-m').click();page.wait_for_timeout(200)
+                      assert page.locator('#btn-m').get_attribute('aria-selected')=='true'
+                      faq=page.locator('#faq .faq-q').first;faq.click();page.wait_for_timeout(300)
+                      assert faq.get_attribute('aria-expanded')=='true'
+                      page.locator('#faq').scroll_into_view_if_needed();page.wait_for_timeout(200)
+                      page.screenshot(path=str(result/(phase+'-'+device+'-faq.png')))
+                      color=page.locator('#aiai-sku #cta').evaluate('(e)=>getComputedStyle(e).backgroundColor')
+                      assert color=='rgb(232, 184, 183)',color
+                      assert not page.evaluate('document.documentElement.scrollWidth>innerWidth+1')
+                      assert not errors,errors
+                      tests.append({'phase':phase,'device':device,'passed':True,'httpStatus':response.status,'product':'chocolate','images':44,'prices':prices,'ctaPink':color,'addons':True,'genderTabs':True,'faq':True,'jsErrors':errors})
+                      context.close()
+                  browser.close()
+              return tests
+          report['tests']+=verify('http://127.0.0.1:8765/','local')
+          headers={'Content-Type':'application/json','X-HereNow-Client':'chatgpt/direct-api'}
+          files=[]
+          for f in sorted(site.rglob('*')):
+              if not f.is_file():continue
+              rel=f.relative_to(site).as_posix();mime=mimetypes.guess_type(rel)[0] or 'application/octet-stream'
+              if rel.endswith('.js'):mime='text/javascript; charset=utf-8'
+              if rel.endswith('.css'):mime='text/css; charset=utf-8'
+              if rel.endswith('.html'):mime='text/html; charset=utf-8'
+              files.append({'path':rel,'size':f.stat().st_size,'contentType':mime,'hash':hashlib.sha256(f.read_bytes()).hexdigest()})
+          r=requests.post('https://here.now/api/v1/publish',headers=headers,json={'files':files,'displayName':'AIAI CHOCOLATE | Black x Pink','displayDescription':'CHOCOLATE only. Based on www.aiai.com.tw with its 44 original images. Black and AIAI pink color preview.'},timeout=60);r.raise_for_status();created=r.json()
+          for k in ['claimToken','claimUrl']:
+              if created.get(k):print('::add-mask::'+created[k])
+          public_key=serialization.load_pem_public_key(b'''-----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6hXJwMbS1kLg8UblU/Zu
+          rzLz358YODwlBamPhrkMvYc+o9Q8sA/EMya2rrdP2FiUP6FeJuVS4weYQG8QO4Tn
+          BdQh1xB0+/9Dnfz4gJvE7IeZePGPLpmBXLe0AKQGrOZhdnAF2UEfsFX27OmApquw
+          tE6SRB4Q+ZVUz3A1rLuNFB+2bDKLBqOCQ1ML9fCWGScwvZZgcjaKmktLXOEVwLh9
+          /3YtNiQmlnJJOY0T2A4wl0RWXx12BkpaPfLuBMDZuVuzGmigSR+iF9ulrI/FSCSe
+          uT97oQ7n2ryL0FwVr7c5FhV45LVD5QYx6NgqU/9EWi14Qi1VHzWxfy5k8FkhOYGq
+          twIDAQAB
+          -----END PUBLIC KEY-----''')
+          key=AESGCM.generate_key(bit_length=256);nonce=os.urandom(12)
+          secret=json.dumps({k:created.get(k) for k in ['claimToken','claimUrl','siteUrl','expiresAt']}).encode()
+          encrypted=AESGCM(key).encrypt(nonce,secret,None)
+          wrapped=public_key.encrypt(key,padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
+          (result/'claim-encrypted.json').write_text(json.dumps({'key':base64.b64encode(wrapped).decode(),'nonce':base64.b64encode(nonce).decode(),'data':base64.b64encode(encrypted).decode()}))
+          def upload(item):
+              f=site/item['path']
+              for attempt in range(3):
+                  try:
+                      r=requests.put(item['url'],headers=item.get('headers',{}),data=f.read_bytes(),timeout=60);r.raise_for_status();return
+                  except Exception:
+                      if attempt==2:raise
+                      time.sleep(1)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:list(pool.map(upload,created['upload']['uploads']))
+          r=requests.post(created['upload']['finalizeUrl'],headers=headers,json={'versionId':created['upload']['versionId']},timeout=60);r.raise_for_status();final=r.json();assert final.get('success'),final
+          live=final.get('siteUrl') or created['siteUrl']
+          report.update(siteUrl=live,expiresAt=created.get('expiresAt'),filesCount=len(files))
+          (result/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          report['tests']+=verify(live,'public')
+          report['verified']=True
+          (result/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print('VERIFIED_PUBLIC_CHOCOLATE_URL',live)
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          import shutil
+          shutil.copytree(site,result/'site',dirs_exist_ok=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-chocolate-black-pink-public
+          path: chocolate-public-result
+          retention-days: 7
