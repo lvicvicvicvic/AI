@@ -1,0 +1,194 @@
+name: Deliver chocolate content-preserving redesign
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/chocolate-redesign-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: chocolate-redesign-preview
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: chocolate-original-source
+          run-id: 35502965297
+          github-token: ${{ github.token }}
+          path: source-capture
+      - name: Restore checksum-verified design build tools
+        run: |
+          python3 - <<'PY'
+          import pathlib,base64,hashlib,io,zipfile
+          parts=[pathlib.Path(f'chocolate-build/input-{i:02d}.b64').read_text().strip() for i in range(4)]
+          # Correct two identified text-transport typos; accept only the original complete ZIP hash.
+          parts[1]=parts[1].replace('6kkv/Yx/sSv6/bu+','6kkv/Yx/sSZ6/bu+').replace('vgWbsgeOXLYZU','vgWbsgeXLYZU')
+          data=base64.b64decode(''.join(parts),validate=True)
+          assert hashlib.sha256(data).hexdigest()=='e54f8ab4d640565d93926e307c5288ee8e2fb85b094f33e391eca722ea7c2ee9', 'Build tool checksum mismatch'
+          z=zipfile.ZipFile(io.BytesIO(data));assert z.testzip() is None
+          assert set(z.namelist())=={'build.py','redesign.css','redesign.js','preview-safety.js'}
+          z.extractall('work')
+          print('DESIGN_BUILD_BYTES_VERIFIED')
+          PY
+          python3 -m pip -q install beautifulsoup4 requests playwright
+      - name: Preserve additional original SKU image bytes
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,hashlib,requests,re,urllib.parse,concurrent.futures
+          from bs4 import BeautifulSoup
+          root=pathlib.Path('source-capture');rows=json.loads((root/'asset-map.json').read_text())
+          paths={urllib.parse.urlparse(r['url']).path for r in rows if 'path' in r}
+          raw=(root/'original-response.html').read_text();s=BeautifulSoup(raw,'html.parser')
+          script=next(x.get_text() for x in s.select('script') if '__AIAI_SPLIT_BOOTED__' in x.get_text() and len(x.get_text())<100000)
+          urls={im.get('src','') for im in s.select('#aiai img')}
+          urls.update(re.findall(r'https?://[^\s\"\'<>]+',script))
+          urls={u for u in urls if urllib.parse.urlparse(u).hostname in ['img.1shop.tw','img.1shop-app.com'] and urllib.parse.urlparse(u).path not in paths}
+          def fetch(u):
+              r=requests.get(u,timeout=40,headers={'User-Agent':'Mozilla/5.0','Referer':'https://www.aiai.com.tw/'})
+              r.raise_for_status();assert r.headers.get('content-type','').startswith('image/')
+              name='assets/'+hashlib.sha256(u.encode()).hexdigest()[:16]+pathlib.PurePosixPath(urllib.parse.urlparse(u).path).suffix
+              (root/name).write_bytes(r.content)
+              return {'url':u,'path':name,'sha256':hashlib.sha256(r.content).hexdigest(),'bytes':len(r.content),'mime':r.headers.get('content-type')}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:rows.extend(pool.map(fetch,sorted(urls)))
+          (root/'asset-map.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))
+          print('ADDITIONAL_ORIGINAL_IMAGES',len(urls))
+          PY
+      - name: Build without rewriting product content or enabling payment
+        env:
+          SOURCE_DIR: source-capture
+          OUTPUT_DIR: chocolate-preview
+        run: |
+          python3 work/build.py
+          node --check chocolate-preview/original-interactions.js
+          node --check chocolate-preview/redesign.js
+          node --check chocolate-preview/preview-safety.js
+          python3 - <<'PY'
+          import json,pathlib
+          a=json.loads(pathlib.Path('chocolate-preview/content-audit.json').read_text())
+          assert a['missingOrRewrittenTextNodes']=={}
+          assert a['originalImageNodes']==a['preservedImageNodes']==44
+          assert a['allCapturedImageBytesIdentical']
+          assert a['ingredientCards']==10 and a['faqItems']==8 and a['recommendationCards']==5 and a['customerReviewCards']==9
+          print('CONTENT_PARITY_PASSED')
+          PY
+      - name: Install mobile browser engines
+        run: python3 -m playwright install --with-deps chromium webkit > /tmp/chocolate-browser-install.log 2>&1
+      - name: Prepare and run isolated interaction tests
+        run: |
+          mkdir -p delivery
+          cat > work/test.py <<'PY'
+          from playwright.sync_api import sync_playwright
+          import os,json,pathlib,http.server,functools,threading
+          server=None;url=os.environ.get('PREVIEW_URL');live=bool(url)
+          if not url:
+              server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(http.server.SimpleHTTPRequestHandler,directory='chocolate-preview'))
+              threading.Thread(target=server.serve_forever,daemon=True).start();url=f'http://127.0.0.1:{server.server_address[1]}/'
+          prefix='live' if live else 'local';results=[]
+          with sync_playwright() as p:
+              for engine in ['webkit','chromium']:
+                  browser=getattr(p,engine).launch()
+                  for width in ([390,1440] if live else [360,375,390,430,1440]):
+                      context=browser.new_context(viewport={'width':width,'height':844 if width<768 else 1000},device_scale_factor=2 if width==390 else 1,is_mobile=width<768,has_touch=width<768)
+                      page=context.new_page();errors=[];mutations=[]
+                      page.on('pageerror',lambda e:errors.append(str(e)))
+                      page.on('request',lambda r:mutations.append(r.url) if r.method not in ['GET','HEAD','OPTIONS'] else None)
+                      response=page.goto(url,wait_until='domcontentloaded',timeout=90000)
+                      assert response.status==200, response.status
+                      notice=False
+                      if page.get_by_text('Open the page',exact=True).count():
+                          notice=True;page.get_by_text('Open the page',exact=True).click();page.wait_for_load_state('domcontentloaded')
+                      page.wait_for_selector('#aiai-sku',timeout=30000);page.wait_for_timeout(1200)
+                      assert page.locator('#aiai h1').inner_text().replace('\n','')=='夜晚甜蜜的祕方，從這片開始'
+                      assert page.locator('[data-source-image]').count()==44
+                      assert page.locator('#aiai-welcome-offer').count()==0
+                      assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+                      if width==390:page.screenshot(path=f'delivery/{prefix}-{engine}-hero-390.png')
+                      if width in [390,1440]:
+                          if width==1440:page.screenshot(path=f'delivery/{prefix}-{engine}-hero-1440.png')
+                          for selector,price in [('#card3','NT$948'),('#card12','NT$1,698'),('#card24','NT$2,598'),('#card6lube','NT$1,317'),('#card6','NT$998')]:
+                              page.locator(selector).click();page.wait_for_timeout(130)
+                              assert page.locator('#price').inner_text().replace(' ','')==price,(selector,page.locator('#price').inner_text())
+                              page.wait_for_function('document.querySelector("#img").complete && document.querySelector("#img").naturalWidth>0')
+                          page.locator('#aiai-sku').scroll_into_view_if_needed();page.wait_for_timeout(250)
+                          page.screenshot(path=f'delivery/{prefix}-{engine}-buybox-{width}.png')
+                          page.locator('#cta').click();page.wait_for_timeout(250)
+                          assert 'show' in page.locator('#skuModal').get_attribute('class')
+                          page.screenshot(path=f'delivery/{prefix}-{engine}-addons-{width}.png')
+                          page.locator('#sheetClose').click()
+                          page.locator('#btn-m').click();assert page.locator('#btn-m').get_attribute('aria-selected')=='true'
+                          page.locator('#btn-f').click();assert page.locator('#btn-f').get_attribute('aria-selected')=='true'
+                          q=page.locator('.faq-q').first;q.click();assert q.get_attribute('aria-expanded')=='true'
+                          page.evaluate('scrollTo(0,0)');page.wait_for_timeout(200)
+                          page.locator('.ac-menu-toggle').click();assert page.locator('#ac-menu').is_visible()
+                          page.locator('.ac-menu-toggle').click();assert not page.locator('#ac-menu').is_visible()
+                          page.locator('[data-ac-checkout]').click();assert page.locator('#ac-checkout-preview').is_visible()
+                          assert page.locator('#ac-checkout-preview input:not([disabled])').count()==0
+                          assert page.locator('.ac-go-official').get_attribute('href')=='https://www.aiai.com.tw/#aiai-sku'
+                          page.locator('[data-ac-close-checkout]').click()
+                          for y in range(0,int(page.evaluate('document.documentElement.scrollHeight')),600):
+                              page.evaluate('(y)=>scrollTo(0,y)',y);page.wait_for_timeout(40)
+                          page.wait_for_timeout(1200)
+                          broken=page.locator('img').evaluate_all('(es)=>es.filter(e=>e.complete&&!e.naturalWidth).map(e=>e.src)')
+                          assert not broken,broken
+                          page.evaluate('scrollTo(0,0)');page.wait_for_timeout(250)
+                          if width==390:page.screenshot(path=f'delivery/{prefix}-{engine}-full-390.png',full_page=True)
+                      assert not errors,errors
+                      assert not mutations,mutations
+                      assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+                      results.append({'engine':engine,'width':width,'httpStatus':200,'entryNotice':notice,'originalContentPreserved':True,'skuSelection':True if width in [390,1440] else 'not-run','errors':errors,'postRequests':mutations,'passed':True})
+                      context.close()
+                  browser.close()
+          pathlib.Path(f'delivery/{prefix}-tests.json').write_text(json.dumps(results,ensure_ascii=False,indent=2))
+          print('CHOCOLATE_BROWSER_VERIFICATION',prefix,json.dumps(results))
+          if server:server.shutdown()
+          PY
+          python3 work/test.py
+      - name: Publish independent preview without modifying gummy or production website
+        id: publish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- chocolate-preview
+          if ! git diff --cached --quiet; then
+            git commit -m 'Add original-content chocolate pink-black redesign preview'
+            git push origin HEAD:main
+          fi
+          SHA=$(git rev-parse HEAD)
+          URL="https://rawcdn.githack.com/lvicvicvicvic/AI/$SHA/chocolate-preview/index.html"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "CHOCOLATE_PREVIEW_URL=$URL"
+      - name: Verify actual public page and mobile layout
+        env:
+          PREVIEW_URL: ${{ steps.publish.outputs.url }}
+        run: python3 work/test.py
+      - name: Record actual verified delivery
+        env:
+          PREVIEW_URL: ${{ steps.publish.outputs.url }}
+          PREVIEW_SHA: ${{ steps.publish.outputs.sha }}
+        run: |
+          python3 - <<'PY'
+          import os,json,pathlib
+          result={'siteUrl':os.environ['PREVIEW_URL'],'commit':os.environ['PREVIEW_SHA'],'verified':True,'expiryConfigured':False,'productionSiteModified':False,'checkoutConnected':False,'contentAudit':json.loads(pathlib.Path('chocolate-preview/content-audit.json').read_text()),'tests':json.loads(pathlib.Path('delivery/live-tests.json').read_text())}
+          pathlib.Path('CHOCOLATE_PREVIEW_STATUS.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+          pathlib.Path('delivery/status.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+          print('VERIFIED_CHOCOLATE_SITE',os.environ['PREVIEW_URL'])
+          PY
+          git add CHOCOLATE_PREVIEW_STATUS.json
+          git commit -m 'Record verified chocolate preview without altering gummy site'
+          git push origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-chocolate-redesign-v1
+          path: |
+            chocolate-preview
+            delivery
+            work/test.py
+          retention-days: 30
