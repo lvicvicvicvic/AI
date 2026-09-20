@@ -1,0 +1,172 @@
+name: Publish verified AIAI chocolate V3
+on:
+  push:
+    branches: [preview/chocolate-v3-hero-split-20260921]
+    paths: ['.github/workflows/chocolate-v3-publish.yml']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install browser checks
+        run: |
+          python3 -m pip -q install requests playwright cryptography
+          python3 -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1
+          sudo apt-get install -y fonts-noto-cjk > /tmp/fonts-install.log 2>&1
+      - name: Build publish and verify the requested revision
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,base64,lzma,hashlib,subprocess,mimetypes,concurrent.futures,time,os
+          import requests
+          from cryptography.hazmat.primitives import serialization,hashes
+          from cryptography.hazmat.primitives.asymmetric import padding
+          from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('public-result');out.mkdir(exist_ok=True)
+          site=out/'site';site.mkdir(exist_ok=True)
+          def path_for(name):
+              p=pathlib.PurePosixPath(name)
+              assert not p.is_absolute() and '..' not in p.parts
+              f=site/name;f.parent.mkdir(parents=True,exist_ok=True);return f
+          base=''.join(p.read_text().strip() for p in sorted(pathlib.Path('chocolate-conversion-v2-build').glob('payload-*.b64')))
+          assert hashlib.sha256(base.encode()).hexdigest()=='bc1fd090a99d83463db634786f9534db62b411ddfadb891588a5092722016e3a','V2 checksum'
+          for name,text in json.loads(lzma.decompress(base64.b64decode(base))).items():path_for(name).write_text(text,encoding='utf-8')
+          manifest=json.loads((site/'build-manifest.json').read_text())
+          for name,digest in manifest['layoutCSSUnchanged'].items():
+              data=subprocess.check_output(['git','show','b46f100090513a66906df059f1678649faf6563c:site/'+name])
+              assert hashlib.sha256(data).hexdigest()==digest,name
+              path_for(name).write_bytes(data)
+          for asset in manifest['productAssets']:
+              data=pathlib.Path(asset['sourceFile']).read_bytes()
+              assert hashlib.sha256(data).hexdigest()==asset['sha256'],asset['path']
+              path_for(asset['path']).write_bytes(data)
+          chunks=sorted(pathlib.Path('chocolate-v3-build').glob('patch-*.b64'))
+          for p in chunks:print('CHUNK',p.name,len(p.read_text().strip()),hashlib.sha256(p.read_text().strip().encode()).hexdigest(),flush=True)
+          patch=''.join(p.read_text().strip() for p in chunks)
+          assert hashlib.sha256(patch.encode()).hexdigest()=='5843eb9c0a292e4d5e5c7f8ef993656d38611352b78f698110aca4ad019c2b4d',('V3 checksum',hashlib.sha256(patch.encode()).hexdigest(),len(patch))
+          for name,data in json.loads(lzma.decompress(base64.b64decode(patch))).items():path_for(name).write_bytes(base64.b64decode(data))
+          html=(site/'index.html').read_text()
+          assert '吃愛艾' in html and '來AIAI' in html and '約會前的準備都在這' in html
+          assert 'entry-v3.js' in html and 'motion-v3.js' in html and 'hero-boxes-v3.avif' in html
+          files=[]
+          for f in sorted(site.rglob('*')):
+              if not f.is_file():continue
+              rel=f.relative_to(site).as_posix();mime=mimetypes.guess_type(rel)[0] or 'application/octet-stream'
+              if rel.endswith('.avif'):mime='image/avif'
+              if rel.endswith('.js'):mime='text/javascript; charset=utf-8'
+              if rel.endswith('.html'):mime='text/html; charset=utf-8'
+              if rel.endswith('.css'):mime='text/css; charset=utf-8'
+              files.append({'path':rel,'size':f.stat().st_size,'contentType':mime,'hash':hashlib.sha256(f.read_bytes()).hexdigest()})
+          headers={'X-HereNow-Client':'chatgpt/aiai-chocolate-v3','Content-Type':'application/json'}
+          r=requests.post('https://here.now/api/v1/publish',headers=headers,json={'files':files,'displayName':'AIAI 巧克力 吃愛艾 來AIAI V3','displayDescription':'Requested hero image and wording, home entry and scroll-controlled chocolate split. Independent preview.'},timeout=60)
+          r.raise_for_status();created=r.json()
+          for field in ['claimToken','claimUrl']:
+              if created.get(field):print('::add-mask::'+created[field],flush=True)
+          pub=serialization.load_pem_public_key(b'''-----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+TtKpaXiimHrYOAE6K16
+          j9LR9Gz5Va3ae/5g3HA6KBOuLdTxbzNAs1KSm3sAOopfCc7Ix74QeU/vx8WvLxzz
+          rMlK1b46xILRO9ecRd9E9KfiFVq/tkn3dmu7yKbHqGSwXETrEbWUA4NK8zOO5z67
+          uqfSFN60bIYDXZcCzPWccuDLsxIscDLQrJK9EH5UelO+Gsg5FowC/gH5r4+hnnoT
+          NUnqs+JityIFWC1SpUqHT83/NAVBpzGDbn5bVJF/uYndYyn9gtKFCqO9yBXbDLdx
+          lPWhvwFPQ0fQkfwmzWyomjAiRZFK3c1qRDUU4fF2qnSpPG4ZFMe0UhbbMNDSNT+R
+          bwIDAQAB
+          -----END PUBLIC KEY-----''')
+          key=AESGCM.generate_key(bit_length=256);nonce=os.urandom(12)
+          encrypted=AESGCM(key).encrypt(nonce,json.dumps(created).encode(),None)
+          wrapped=pub.encrypt(key,padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
+          (out/'claim-encrypted.json').write_text(json.dumps({'key':base64.b64encode(wrapped).decode(),'nonce':base64.b64encode(nonce).decode(),'data':base64.b64encode(encrypted).decode()}))
+          upload=created['upload']
+          def put(item):
+              f=site/item['path'];h=item.get('headers') or {'Content-Type':next(x['contentType'] for x in files if x['path']==item['path'])}
+              for attempt in range(3):
+                  try:
+                      rr=requests.put(item['url'],headers=h,data=f.read_bytes(),timeout=60);rr.raise_for_status();return
+                  except Exception:
+                      if attempt==2:raise
+                      time.sleep(2)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:list(pool.map(put,upload['uploads']))
+          rr=requests.post(upload.get('finalizeUrl') or created['finalizeUrl'],headers=headers,json={'versionId':upload['versionId']},timeout=60)
+          rr.raise_for_status();final=rr.json();assert final.get('success') is True
+          url=final.get('siteUrl') or created['siteUrl']
+          report={'siteUrl':url,'expiresAt':created.get('expiresAt'),'publishStatus':final.get('publishStatus'),'buildCommit':os.getenv('GITHUB_SHA'),'checkoutConnected':False,'productionSiteModified':False,'verified':False,'tests':[]}
+          def save(): (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          save();print('PUBLIC_SITE_URL',url,flush=True)
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for name,width,height,mobile in [('mobile',390,844,True),('desktop',1440,1000,False)]:
+                  ctx=browser.new_context(viewport={'width':width,'height':height},device_scale_factor=1,is_mobile=mobile,has_touch=mobile)
+                  page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));test={'device':name}
+                  try:
+                      response=page.goto(url,wait_until='networkidle',timeout=60000);assert response.status==200
+                      page.wait_for_timeout(1200)
+                      assert page.locator('h1').inner_text()=='吃愛艾\n來AIAI'
+                      assert '約會前的準備都在這' in page.locator('.v5-hero-description').inner_text()
+                      assert page.evaluate('scrollY')==0,('Entry scroll',page.evaluate('scrollY'))
+                      assert not page.locator('#aiai-welcome-offer').is_visible()
+                      assert page.locator('.v5-hero-photo img').get_attribute('src')=='assets/hero-boxes-v3.avif'
+                      bad=page.locator('h1,h2,h3,.story-line,.story-caption,.eyebrow').evaluate_all("es=>es.map(e=>e.textContent).filter(t=>/[，。！？,?.]/.test(t))")
+                      assert not bad,('Heading punctuation',bad)
+                      page.screenshot(path=str(out/('public-'+name+'-home.png')))
+                      page.locator('.v5-hero-action > .v5-offer-button').click();page.wait_for_timeout(1200)
+                      assert page.evaluate('scrollY')>500,'Buy CTA did not scroll'
+                      page.locator('[data-pack="12"]').click();assert page.locator('[data-total]').inner_text()=='NT$1,698'
+                      page.reload(wait_until='networkidle');page.wait_for_timeout(1000)
+                      assert page.evaluate('scrollY')==0,('Reload position',page.evaluate('scrollY'))
+                      assert page.locator('[data-total]').inner_text()=='NT$1,698','Selection lost'
+                      page.goto(url+'#buy',wait_until='networkidle');page.wait_for_timeout(1000)
+                      # A same-document hash navigation is a user action, not a fresh load.
+                      page.reload(wait_until='networkidle');page.wait_for_timeout(1000)
+                      assert page.evaluate('scrollY')==0 and page.evaluate('location.hash')=='','Entry fragment was not cleared'
+                      page.locator('.v5-hero-badge').click();page.locator('#aiai-welcome-offer').wait_for(state='visible')
+                      page.locator('[data-welcome-close]').click();page.wait_for_timeout(500)
+                      assert page.evaluate('scrollY')==0,'Closing offer moved to buy'
+                      page.locator('.v5-hero-action > .v5-offer-button').click();page.wait_for_timeout(900)
+                      page.locator('[data-pack="6"]').click();page.locator('[data-lube]').check()
+                      assert page.locator('[data-total]').inner_text()=='NT$1,317'
+                      page.locator('[data-lube]').uncheck()
+                      scene=page.locator('.v3-story')
+                      metrics=scene.evaluate('(e)=>({top:e.getBoundingClientRect().top+scrollY,travel:e.offsetHeight-document.documentElement.clientHeight})')
+                      states=[]
+                      for label,progress in [('intact',0),('halfway',.46),('split',.98),('return',0)]:
+                          page.evaluate('(y)=>scrollTo({top:y,left:0,behavior:"instant"})',metrics['top']+metrics['travel']*progress)
+                          page.wait_for_timeout(300)
+                          state=scene.get_attribute('data-split-state');states.append(state)
+                          if label!='return':page.screenshot(path=str(out/('public-'+name+'-'+label+'.png')))
+                      assert states==['intact','separating','split','intact'],states
+                      faq=page.locator('#faq .accordion button').first;faq.click();assert faq.get_attribute('aria-expanded')=='true'
+                      page.locator('img').evaluate_all("es=>es.forEach(e=>e.loading='eager')")
+                      page.wait_for_function('[...document.images].every(i=>i.complete && i.naturalWidth>0)',timeout=20000)
+                      assert not page.evaluate('Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)>innerWidth+1')
+                      assert not errors,errors
+                      test.update(passed=True,httpStatus=response.status,homeOnEntry=True,homeOnReload=True,entryHashCleared=True,selectionPreserved=True,heroCopy=True,heroImage=True,headingsWithoutPunctuation=True,optionalOfferClosePreservesPosition=True,manualBuyCTA=True,addonCalculation=True,splitStates=states,faq=True,brokenImages=[],horizontalOverflow=False,jsErrors=errors)
+                  except Exception as e:
+                      test.update(passed=False,error=str(e),jsErrors=errors);page.screenshot(path=str(out/('public-'+name+'-error.png')))
+                  report['tests'].append(test);save();ctx.close()
+              ctx=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True)
+              page=ctx.new_page()
+              try:
+                  page.goto(url+'#buy',wait_until='networkidle',timeout=60000);page.wait_for_timeout(1300)
+                  assert page.evaluate('scrollY')==0 and page.evaluate('location.hash')==''
+                  report['freshFragmentEntryAtHome']=True
+              except Exception as e:report['freshFragmentEntryAtHome']=False;report['fragmentError']=str(e)
+              ctx.close();browser.close()
+          for asset in ['hero-boxes-v3.avif','chocolate-intact-v3.avif','chocolate-split-v3.avif']:
+              rr=requests.get(url+'assets/'+asset,timeout=30);rr.raise_for_status()
+              assert hashlib.sha256(rr.content).hexdigest()==hashlib.sha256((site/'assets'/asset).read_bytes()).hexdigest(),asset
+          report['suppliedAssetsDeliveryVerified']=True
+          report['verified']=all(t.get('passed') for t in report['tests']) and report.get('freshFragmentEntryAtHome',False)
+          save();print(json.dumps(report,ensure_ascii=False,indent=2),flush=True)
+          assert report['verified'],'Inspect verification report'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-chocolate-v3-public
+          path: public-result
+          retention-days: 7
