@@ -7,7 +7,7 @@
 
 /* AIAI BLACK x BRAND PINK — color-only edition, 2026-09-20.
    Source: b46f100090513a66906df059f1678649faf6563c.
-   No markup, copy, images, geometry, responsive rules or scripts changed.
+   No markup, copy, images, geometry, responsive rules or interactions changed.
    Keep legacy black/white tokens intact: both are used for surfaces AND text.
 */
 :root {
@@ -194,3 +194,9 @@ body .v5-scratch-card.is-revealed .v5-scratch-reward svg { fill: var(--aiai-bg);
 body .v5-welcome-dialog :focus-visible { outline-color: var(--aiai-pink); }
 body .v5-line-cta svg path[stroke] { stroke: var(--aiai-pink); }
 body .v5-line-cta:hover svg path[stroke] { stroke: var(--aiai-pink-hover); }
+
+/* Dark-background legibility for existing controls; geometry unchanged. */
+body .assurance-note strong { color: var(--aiai-pink); }
+body .trust-item__icon { color: var(--aiai-pink); border-color: var(--aiai-line); }
+body .buybox-accordions { border-color: var(--aiai-line); }
+body .accordion button i::before, body .accordion button i::after { background: var(--aiai-pink); }
