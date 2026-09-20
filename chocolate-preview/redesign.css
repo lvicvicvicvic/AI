@@ -1,0 +1,270 @@
+/* AIAI chocolate / gummy-family presentation layer. No product copy or assets changed. */
+:root{--ac-pink:#e8b8b7;--ac-pale:#faeeee;--ac-soft:#f4d7d7;--ac-ink:#111111;--ac-berry:#4a1024;--ac-cream:#fff9f6;--ac-line:rgba(17,17,17,.16);--ac-ease:cubic-bezier(.22,1,.36,1)}
+html.ac-redesign{scroll-behavior:smooth;background:var(--ac-pale);scroll-padding-top:90px}
+html.ac-redesign body{margin:0;background:var(--ac-pale);color:var(--ac-ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
+html.ac-redesign *,html.ac-redesign *::before,html.ac-redesign *::after{box-sizing:border-box}
+html.ac-redesign button,html.ac-redesign input,html.ac-redesign select{font:inherit}
+html.ac-redesign a{color:inherit;text-decoration:none}html.ac-redesign button{cursor:pointer}html.ac-redesign img{max-width:100%;display:block}html.ac-redesign [hidden]{display:none!important}
+html.ac-redesign :focus-visible{outline:3px solid #9b3f61;outline-offset:4px}
+.ac-announcement{display:flex;align-items:center;justify-content:center;text-align:center;min-height:40px;background:var(--ac-berry);color:white;font-size:11px;font-weight:750;line-height:1.5;padding:8px 16px;letter-spacing:.015em}
+.ac-nav{width:min(1280px,calc(100% - 32px));margin:0 auto;padding:12px 0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;pointer-events:none}
+.ac-brand,.ac-nav-actions{pointer-events:auto;border:1px solid rgba(255,255,255,.7);background:rgba(74,16,36,.22);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:999px;display:flex;align-items:center;box-shadow:0 1px 5px rgba(17,17,17,.03)}
+.ac-brand{height:48px;gap:6px;padding:4px 14px 4px 7px!important;color:white!important}.ac-brand img{height:36px;width:36px;object-fit:contain;border-radius:50%}.ac-brand span{font-size:23px;font-weight:950;font-style:italic;letter-spacing:-1.5px;line-height:1}
+.ac-nav-actions{height:48px;padding:4px;gap:2px}.ac-nav .ac-shop{border-radius:999px;background:var(--ac-pink);color:var(--ac-ink);font-size:13px;font-weight:800;white-space:nowrap;padding:9px 15px;min-height:38px;display:flex;align-items:center}
+.ac-nav button{background:none;border:0;display:flex;width:34px;height:38px;align-items:center;justify-content:center;color:white;padding:6px}.ac-nav svg{fill:none;stroke:currentColor;stroke-width:1.7;width:24px;height:24px}.ac-menu-toggle{flex-direction:column;gap:5px}.ac-menu-toggle span{display:block;width:19px;height:2px;background:currentColor;transition:transform .22s}.ac-menu-toggle[aria-expanded=true] span:first-child{transform:translateY(3.5px) rotate(45deg)}.ac-menu-toggle[aria-expanded=true] span:last-child{transform:translateY(-3.5px) rotate(-45deg)}
+.ac-menu{position:fixed;z-index:101;top:82px;right:16px;width:min(350px,calc(100% - 32px));max-height:calc(100dvh - 120px);overflow-y:auto;background:var(--ac-cream);box-shadow:0 20px 50px #0002;border:1px solid var(--ac-line);border-radius:20px;padding:16px}.ac-menu a{display:block;padding:12px;border-bottom:1px solid var(--ac-line);font-size:14px;font-weight:650}.ac-menu a:last-child{border:0}
+html.ac-redesign #aiai{--pink:var(--ac-pink);--text:var(--ac-ink);--bg:var(--ac-pale);--light:#514449;--gold:var(--ac-berry);--muted:#65565b;color:var(--ac-ink)!important;background:transparent!important;font-family:inherit!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important}
+html.ac-redesign #aiai section,html.ac-redesign #aiai div{min-width:0}
+html.ac-redesign #aiai h1,html.ac-redesign #aiai h2,html.ac-redesign #aiai h3,html.ac-redesign #aiai h4{font-family:inherit!important;font-weight:900;letter-spacing:-.035em;word-break:normal;overflow-wrap:anywhere;text-shadow:none!important}
+html.ac-redesign #aiai>section{margin:0;padding:64px max(20px,calc((100% - 1280px)/2));max-width:none;width:100%;scroll-margin-top:90px}
+html.ac-redesign #aiai h2{font-size:clamp(28px,5vw,52px);line-height:1.22;color:inherit}
+html.ac-redesign #aiai p{line-height:1.75}
+html.ac-redesign #aiai :is(.s-cta,.mid-cta .btn,#aiai-vs-chocolate .cta){border-radius:999px!important;box-shadow:none!important;background:var(--ac-ink)!important;color:#fff!important;border:1px solid var(--ac-ink)!important;min-height:55px;font-size:16px!important;letter-spacing:0!important;font-weight:800;display:flex;align-items:center;justify-content:center;padding:14px 24px;width:100%;max-width:460px;margin:24px auto 0;line-height:1.4;transition:background .2s,transform .2s}
+html.ac-redesign #aiai :is(.s-cta,.mid-cta .btn,#aiai-vs-chocolate .cta):hover{background:var(--ac-berry)!important;transform:translateY(-1px)}
+/* Original banner and divider images: full, uncropped slide canvases. */
+html.ac-redesign #aiai .ac-hero{padding:4px max(16px,calc((100% - 1280px)/2)) 32px;background:var(--ac-pale);display:grid;gap:24px;align-items:center;overflow:visible}
+.ac-hero-media{width:100%;position:relative}.ac-hero-rail{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:12px;background:#050305;touch-action:pan-x pan-y}.ac-hero-rail::-webkit-scrollbar{display:none}
+html.ac-redesign #aiai .ac-hero-slide{flex:0 0 100%;width:100%;height:auto;aspect-ratio:1/1;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;padding:0!important;margin:0!important;background:#050305;overflow:hidden}
+html.ac-redesign #aiai .ac-hero-slide img,html.ac-redesign #aiai .ac-hero-slide .divider-img{height:100%!important;width:100%!important;object-fit:contain!important;max-width:none!important;max-height:none!important;transform:none!important;filter:none!important;margin:0!important;opacity:1!important}
+.ac-gallery-controls{display:flex;align-items:center;gap:14px;justify-content:center;margin:12px 0 0;font:600 10px/1.2 ui-monospace,monospace;letter-spacing:.1em;color:#675159}.ac-gallery-controls button{border:1px solid var(--ac-line);background:transparent;border-radius:50%;height:32px;width:32px;font-size:16px;display:grid;place-items:center;padding:0}.ac-gallery-controls button:hover{background:var(--ac-soft)}
+html.ac-redesign #aiai .slogan{padding:0!important;margin:0!important;display:flex;flex-direction:column;align-items:center;text-align:center;background:none;gap:0}
+html.ac-redesign #aiai .slogan .en{order:-1;font-size:11px;color:var(--ac-berry);letter-spacing:.18em;font-weight:700;margin:0 0 10px}
+html.ac-redesign #aiai .slogan h1{font-size:clamp(32px,8.9vw,50px)!important;line-height:1.28!important;color:var(--ac-ink)!important;margin:0 0 16px;max-width:620px;text-wrap:balance}
+html.ac-redesign #aiai .slogan .sub{font-size:16px;color:var(--ac-berry);font-weight:700;margin:0 0 12px;text-wrap:balance}
+html.ac-redesign #aiai .slogan .legal{font-size:11px;color:#625158;margin:0;line-height:1.8;text-wrap:balance}
+html.ac-redesign #aiai .slogan .s-cta{margin-top:22px}
+html.ac-redesign #aiai section[aria-label="關鍵表現"]{padding:24px max(16px,calc((100% - 1280px)/2)) 34px;background:var(--ac-pale)}
+html.ac-redesign #aiai .kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;width:100%;max-width:760px;margin:0 auto;border-top:1px solid var(--ac-line);border-bottom:1px solid var(--ac-line);padding:22px 0}
+html.ac-redesign #aiai .kpi-item{border-right:1px solid var(--ac-line);padding:0 5px;text-align:center}.kpi-item:last-child{border-right:0!important}
+html.ac-redesign #aiai .kpi h3{font-size:26px;line-height:1.2;color:var(--ac-berry)!important;margin:0 0 7px!important;white-space:nowrap}
+html.ac-redesign #aiai .kpi .num{font-size:26px!important;color:inherit}.kpi .unit{font-size:13px!important}
+html.ac-redesign #aiai .kpi-item>span{font-size:11px;color:#655259}
+/* Expanded Gruns-style buybox using the actual original SKUs and wording. */
+html.ac-redesign #aiai #aiai-sku{--bg:var(--ac-cream);--card:var(--ac-cream);--panel:white;--group:var(--ac-pale);--text:var(--ac-ink);--muted:#65565b;--line:var(--ac-line);--pink:var(--ac-pink);--pink-hi:var(--ac-berry);--ring:#e8b8b750;--shadow:none;background:white!important;color:var(--ac-ink)!important;padding:40px max(16px,calc((100% - 1280px)/2)) 56px;max-width:none!important;width:100%!important}
+html.ac-redesign #aiai #aiai-sku .wrap{padding:0;max-width:none!important;width:100%}
+html.ac-redesign #aiai #aiai-sku #card{background:none;border:0;border-radius:0;box-shadow:none;display:grid;gap:26px;width:100%;overflow:visible}
+html.ac-redesign #aiai #aiai-sku .media{width:100%;margin:0!important;background:#0c080b!important;aspect-ratio:auto!important;overflow:hidden;border-radius:14px;display:block}
+html.ac-redesign #aiai #aiai-sku .media img{position:static!important;height:auto!important;width:100%!important;aspect-ratio:auto!important;object-fit:contain!important;max-height:none;display:block;margin:0!important;border-radius:0!important}
+html.ac-redesign #aiai #aiai-sku .head{padding:0}.ac-product-panel{min-width:0}
+html.ac-redesign #aiai #aiai-sku .title{font-size:26px!important;line-height:1.3!important;margin-bottom:15px!important;color:var(--ac-ink)!important}
+html.ac-redesign #aiai #aiai-sku .rating-link{border:0;border-radius:0;background:none;color:var(--ac-berry);padding:0;font-size:13px;gap:8px}
+html.ac-redesign #aiai #aiai-sku .rstar.full{background:var(--ac-berry)}
+html.ac-redesign #aiai #aiai-sku .bubble{box-shadow:none;border-radius:8px;margin:22px 0 4px!important;padding:10px 12px;background:var(--ac-pale);color:#5a3344;width:100%;font-size:13px;line-height:1.6}
+html.ac-redesign #aiai #aiai-sku .info{padding:0}
+html.ac-redesign #aiai #aiai-sku .price{margin:16px 0 22px;gap:9px;letter-spacing:0}
+html.ac-redesign #aiai #aiai-sku #price{font-size:34px;font-weight:900;color:var(--ac-ink)}
+html.ac-redesign #aiai #aiai-sku #comparePrice{color:#8b7880;font-size:13px}html.ac-redesign #aiai #aiai-sku #per{font-size:12px;color:#655158}
+html.ac-redesign #aiai #aiai-sku .bundle{gap:12px;margin:0 0 22px}
+html.ac-redesign #aiai #aiai-sku .primary-packs{display:grid;grid-template-columns:1fr;gap:10px}
+html.ac-redesign #aiai #aiai-sku .bcard,html.ac-redesign #aiai #aiai-sku #card6,html.ac-redesign #aiai #aiai-sku #card6lube,html.ac-redesign #aiai #aiai-sku #card12,html.ac-redesign #aiai #aiai-sku #card24{border:1px solid var(--ac-line)!important;background:white!important;border-radius:12px!important;box-shadow:none!important;transform:none;min-height:88px;color:var(--ac-ink);padding:16px!important;overflow:visible!important}
+html.ac-redesign #aiai #aiai-sku .qty-radio:checked+.bcard{border:2px solid var(--ac-ink)!important;box-shadow:none!important;background:var(--ac-pale)!important;transform:none!important;padding:15px!important}
+html.ac-redesign #aiai #aiai-sku #card6::before{display:none}
+html.ac-redesign #aiai #aiai-sku #card6::after{background:var(--ac-ink);color:var(--ac-soft);box-shadow:none;border-radius:5px;right:12px;top:-10px;font-size:10px;padding:4px 9px}
+html.ac-redesign #aiai #aiai-sku .bcard .name{font-size:16px;color:var(--ac-ink);line-height:1.4}
+html.ac-redesign #aiai #aiai-sku .bcard .sub{font-size:12px;color:#79636b;line-height:1.5}
+html.ac-redesign #aiai #aiai-sku .bcard .value{font-size:14px;color:var(--ac-berry);font-weight:800;margin:6px 0 0}
+html.ac-redesign #aiai #aiai-sku .bcard .chip{width:32px;height:32px;padding:0;display:grid;place-items:center;background:var(--ac-soft);border:0;color:var(--ac-ink);font-size:16px}
+html.ac-redesign #aiai #aiai-sku .secondary-title{font-size:13px;color:#655158;line-height:1.5;margin:8px 0 0}
+html.ac-redesign #aiai #aiai-sku .row-secondary{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html.ac-redesign #aiai #aiai-sku .top-card{padding:12px 4px!important;min-height:74px;text-align:center;align-items:center}
+html.ac-redesign #aiai #aiai-sku .top-card .name{font-size:13px}
+html.ac-redesign #aiai #aiai-sku .top-card .sub{font-size:10px}
+html.ac-redesign #aiai #aiai-sku .qty-radio:checked+.top-card{padding:11px 3px!important}
+html.ac-redesign #aiai #aiai-sku #cta{width:100%;display:flex;align-items:center;justify-content:center;min-height:56px;background:var(--ac-ink)!important;color:white!important;border-radius:999px!important;box-shadow:none!important;padding:14px;font-size:16px;line-height:1.4}
+html.ac-redesign #aiai #aiai-sku .trust{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:15px 0;margin:0;font-size:11px;line-height:1.65;color:#54454b}
+html.ac-redesign #aiai #aiai-sku .ship-tip{font-size:11px;line-height:1.6;color:#75616a;margin:8px 0 0}
+html.ac-redesign #aiai #aiai-sku .ingredient-info{border:0;border-top:1px solid var(--ac-line);border-bottom:1px solid var(--ac-line);border-radius:0;background:none;padding:0;margin:0}
+html.ac-redesign #aiai #aiai-sku .ingredient-info summary{padding:20px 0;background:none;color:var(--ac-ink);line-height:1.5}
+html.ac-redesign #aiai #aiai-sku .ingredient-title{font-size:16px}.ingredient-sub{font-size:12px!important;color:#655158!important}
+html.ac-redesign #aiai #aiai-sku .ingredient-body,html.ac-redesign #aiai #aiai-sku .ingredient-body *{color:#54454b;font-size:13px;line-height:1.85}
+/* Six original feature blocks, not reduced to three new slogans. */
+html.ac-redesign #aiai #features{background:var(--ac-ink);color:var(--ac-cream);display:flex;flex-direction:column;gap:38px;padding-top:54px;padding-bottom:54px;overflow:visible;position:relative}
+html.ac-redesign #aiai #features .feat-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:100%;max-width:none;position:relative;z-index:1;counter-reset:feature}
+html.ac-redesign #aiai #features .feat-item{position:relative;background:#201a1e;border:1px solid #ffffff20;border-radius:16px;padding:20px 16px;text-align:left;box-shadow:none;counter-increment:feature}
+html.ac-redesign #aiai #features .feat-item:before{content:counter(feature,decimal-leading-zero);font:600 11px/1 ui-monospace,monospace;color:var(--ac-pink);display:block;margin-bottom:24px}
+html.ac-redesign #aiai #features .feat-item h3{color:var(--ac-pink);font-size:18px;margin:0 0 10px;line-height:1.4}
+html.ac-redesign #aiai #features .feat-item p{font-size:12px;color:#f5e8edbd;margin:0;line-height:1.85}
+html.ac-redesign #aiai #features .feat-img{position:relative!important;inset:auto!important;transform:none!important;width:min(100%,440px)!important;max-width:100%!important;height:auto!important;max-height:none!important;object-fit:contain!important;margin:0 auto;filter:none!important;align-self:center;z-index:0}
+/* Original comparison words, redesigned two-panel composition. */
+html.ac-redesign #aiai #aiai-vs-chocolate{--text:var(--ac-ink);--muted:#65545d;--pink2:var(--ac-berry);background:var(--ac-soft);color:var(--ac-ink)}
+html.ac-redesign #aiai #aiai-vs-chocolate .wrap{max-width:1000px}
+html.ac-redesign #aiai #aiai-vs-chocolate .eyebrow{font-size:11px;background:none;color:var(--ac-berry);border-color:#4a102430;margin:0 auto 24px;display:table;padding:6px 12px}
+html.ac-redesign #aiai #aiai-vs-chocolate h2{font-size:clamp(28px,5vw,52px);text-align:center;color:var(--ac-ink);margin:0 0 20px;line-height:1.35}
+html.ac-redesign #aiai #aiai-vs-chocolate h2 b{color:#8c304c}
+html.ac-redesign #aiai #aiai-vs-chocolate .lead{color:#66525a;text-align:center;max-width:620px;margin:0 auto 32px;font-size:14px}
+html.ac-redesign #aiai #aiai-vs-chocolate .lead strong{color:var(--ac-ink)}
+html.ac-redesign #aiai #aiai-vs-chocolate .plain-card{background:#fff8;border:1px solid var(--ac-line);opacity:1;border-radius:18px;padding:22px}
+html.ac-redesign #aiai #aiai-vs-chocolate .plain-card .name,html.ac-redesign #aiai #aiai-vs-chocolate .plain-card .one-line{color:#655158}
+html.ac-redesign #aiai #aiai-vs-chocolate .plain-card .tag{color:#75616a;border-color:var(--ac-line);background:none}
+html.ac-redesign #aiai #aiai-vs-chocolate .aiai-card{background:var(--ac-ink);box-shadow:none;border:1px solid var(--ac-ink);padding:24px;border-radius:18px;color:#fff}
+html.ac-redesign #aiai #aiai-vs-chocolate .aiai-card .tag,html.ac-redesign #aiai #aiai-vs-chocolate .dot{background:var(--ac-pink);color:var(--ac-ink)}
+html.ac-redesign #aiai #aiai-vs-chocolate .point{font-size:13px;color:var(--ac-cream);margin-top:6px;line-height:1.65}
+html.ac-redesign #aiai #aiai-vs-chocolate .mini-note{font-size:11px;color:#eadde4a6;line-height:1.8}
+/* Ten source ingredient cards, native scrolling with complete card boundaries. */
+html.ac-redesign #aiai .ing-sec{background:var(--ac-cream);padding-top:56px;padding-bottom:48px;overflow:hidden}
+html.ac-redesign #aiai .swiper-ing{overflow:visible;position:relative}
+html.ac-redesign #aiai .swiper-ing .swiper-wrapper{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:#ba8c98 transparent;transform:none!important;padding:0 0 20px;align-items:stretch}
+html.ac-redesign #aiai .ing-card{flex:0 0 100%;max-width:100%;width:auto!important;margin:0!important;height:auto;border:1px solid var(--ac-line);background:white;box-shadow:none;border-radius:18px;overflow:hidden;scroll-snap-align:center;display:flex;flex-direction:column}
+html.ac-redesign #aiai .ing-img{display:block;width:100%;height:auto!important;aspect-ratio:1;object-fit:contain!important;border-radius:0;padding:0;filter:none;margin:0;background:#050505}
+html.ac-redesign #aiai .ing-body{padding:24px}
+html.ac-redesign #aiai .ing-body h3{font-size:25px;color:var(--ac-ink);margin:0 0 5px}
+html.ac-redesign #aiai .ing-body h4{font-size:14px;color:var(--ac-berry);margin:0 0 12px}
+html.ac-redesign #aiai .ing-body p{font-size:14px;color:#67565c;margin:0;line-height:1.85}
+html.ac-redesign #aiai .ing-sec>p{font-size:11px!important;color:#75616a!important;line-height:1.8;margin:18px auto 0!important}
+html.ac-redesign #aiai .swiper-button-prev,html.ac-redesign #aiai .swiper-button-next{position:static;inset:auto;display:inline-grid;place-items:center;height:40px;width:40px;border:1px solid var(--ac-line);border-radius:50%;color:var(--ac-ink);margin:16px 8px 0 0;cursor:pointer;background:none}
+.swiper-button-prev:after{content:'←';font-size:18px!important}.swiper-button-next:after{content:'→';font-size:18px!important}
+/* Four source CTA statements retain their punctuation and all wording. */
+html.ac-redesign #aiai .mid-cta{background:var(--ac-ink);color:var(--ac-pink);padding-top:52px;padding-bottom:52px;text-align:center}
+html.ac-redesign #aiai .mid-cta .wrap{max-width:1050px;margin:0 auto;padding:0;display:flex;flex-direction:column;align-items:center;gap:0}
+html.ac-redesign #aiai .mid-cta p{font-size:clamp(25px,4.2vw,46px)!important;font-weight:900;line-height:1.4!important;letter-spacing:-.035em;color:var(--ac-pink)!important;margin:0;max-width:920px;text-wrap:balance}
+html.ac-redesign #aiai .mid-cta .btn{background:var(--ac-pink)!important;color:var(--ac-ink)!important;border-color:var(--ac-pink)!important;max-width:370px}
+html.ac-redesign #aiai .timing-sec{background:var(--ac-pale)}
+html.ac-redesign #aiai #timing h2{margin:0 0 8px;text-align:center;color:var(--ac-ink)!important;line-height:1.3}
+html.ac-redesign #aiai #timing h2+h2{color:#8c304c!important;margin-bottom:32px}
+html.ac-redesign #aiai .timing-grid{display:grid;grid-template-columns:1fr;gap:22px;margin:0}
+html.ac-redesign #aiai .timing-item{border:1px solid var(--ac-line);border-radius:16px;overflow:hidden;background:white;position:relative;box-shadow:none}
+html.ac-redesign #aiai .timing-item img{width:100%;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important;transform:none!important}
+html.ac-redesign #aiai .timing-caption{position:static;inset:auto!important;background:none!important;padding:20px;color:var(--ac-ink);text-align:left;display:flex;flex-direction:column;gap:5px}
+html.ac-redesign #aiai .timing-caption strong{font-size:20px;color:var(--ac-ink)}
+html.ac-redesign #aiai .timing-caption span{font-size:14px;color:#73616a}
+html.ac-redesign #aiai .effect-sec{background:var(--ac-soft)}
+html.ac-redesign #aiai .effect-sec h2{text-align:center;color:var(--ac-ink);margin:0 0 28px}
+html.ac-redesign #aiai .effect-btns{display:flex;padding:5px;gap:4px;border:1px solid #4a102440;border-radius:999px;max-width:520px;margin:0 auto 26px;background:#fff8}
+html.ac-redesign #aiai .gender-btn{flex:1;background:none;border:0;min-height:46px;color:var(--ac-berry);box-shadow:none;border-radius:999px;font-size:15px;padding:10px 15px}
+html.ac-redesign #aiai .gender-btn.active{background:var(--ac-ink);color:var(--ac-pink)}
+html.ac-redesign #aiai .effect-swiper{overflow:hidden;max-width:1050px;margin:0 auto}
+html.ac-redesign #aiai .effect-swiper .swiper-wrapper{display:flex;align-items:stretch;transition:transform .35s var(--ac-ease)}
+html.ac-redesign #aiai .effect-slide{flex:0 0 100%;width:100%;padding:0!important;height:auto}
+html.ac-redesign #aiai .gender-col{display:grid;grid-template-columns:1fr;gap:12px}
+html.ac-redesign #aiai .gender-col .card{padding:22px;background:var(--ac-cream);border:1px solid var(--ac-line);border-radius:14px;box-shadow:none}
+html.ac-redesign #aiai .gender-col .card h4{font-size:18px;color:var(--ac-ink);margin:0 0 8px}
+html.ac-redesign #aiai .gender-col .card p{font-size:14px;color:#6b555e;margin:0}
+/* Preserve both original groups of testimonials. */
+html.ac-redesign #aiai .cust-rec{--gap:16px;--bg:var(--ac-ink);background:var(--ac-ink);color:var(--ac-cream);overflow:hidden}
+html.ac-redesign #aiai .cust-rec .header-row{display:flex;flex-direction:column;align-items:center;gap:24px;margin-bottom:30px}
+html.ac-redesign #aiai .cust-title{color:var(--ac-pink);text-align:center;max-width:940px;font-size:clamp(29px,4.5vw,52px);margin:0}
+html.ac-redesign #aiai .arrow-box{display:flex;gap:10px}
+html.ac-redesign #aiai .nav-btn{border:1px solid #e8b8b750;color:var(--ac-pink);background:none;border-radius:999px;padding:9px 16px;min-height:40px;font-size:12px}
+html.ac-redesign #aiai .card-track{display:flex;gap:16px;padding:0 0 20px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:var(--ac-pink) #111;transform:none;width:100%;margin:0}
+html.ac-redesign #aiai .rec-card{flex:0 0 100%;max-width:100%;min-width:0;border-radius:20px;background:var(--ac-cream);border:0;box-shadow:none;padding:20px;scroll-snap-align:center;color:var(--ac-ink)}
+html.ac-redesign #aiai .rec-card .top{margin-bottom:16px;display:flex;align-items:center;gap:12px}.rec-card .avatar{background:var(--ac-pink)!important;color:var(--ac-berry)!important;font-size:13px}
+html.ac-redesign #aiai .rec-card .name{font-size:17px;color:var(--ac-ink);margin:0}.rec-card .status{color:#75616a!important;font-size:12px!important}.rec-card .stars{color:var(--ac-berry)!important;font-size:12px}
+html.ac-redesign #aiai .rec-card>img{height:auto!important;width:100%;max-height:440px;object-fit:contain!important;background:#171314;border-radius:12px;margin:0}
+html.ac-redesign #aiai .rec-card .comment{color:#59434e;font-size:15px;line-height:1.9;margin:18px 0 0}
+html.ac-redesign #aiai #benefits{background:var(--ac-cream)}
+html.ac-redesign #aiai #benefits h2{text-align:center;color:var(--ac-ink);margin:0 auto 32px;max-width:1000px}
+html.ac-redesign #aiai .benefit-list{list-style:none;margin:0 auto;padding:0;max-width:960px;display:block;width:100%}
+html.ac-redesign #aiai .benefit-item{margin:0;background:transparent;border:0;border-bottom:1px solid var(--ac-line);border-radius:0;padding:0}
+html.ac-redesign #aiai .bi-btn{width:100%;display:flex;align-items:center;gap:16px;background:none;border:0;color:var(--ac-ink);padding:20px 0;text-align:left;border-radius:0}
+html.ac-redesign #aiai .bi-btn>img{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:9px;margin:0}
+html.ac-redesign #aiai .bi-btn>div{flex:1}.bi-btn>div strong{display:block;font-size:16px!important;color:var(--ac-ink)!important}.bi-btn>div span{font-size:12px!important;color:#75616a!important;line-height:1.65}
+html.ac-redesign #aiai .bi-btn::after{content:'+';background:none;color:#745362;width:26px;flex:0 0 26px;font-size:24px;font-weight:400;transform:none}.bi-btn[aria-expanded=true]::after{content:'−'!important}
+html.ac-redesign #aiai .bi-img{overflow:hidden;margin:0!important;padding:0!important;transition:max-height .3s var(--ac-ease)}
+html.ac-redesign #aiai .bi-img img{height:auto!important;width:100%!important;max-width:600px!important;object-fit:contain;margin:0 auto 20px;border-radius:12px}
+html.ac-redesign #aiai #faq{background:var(--ac-pale)}
+html.ac-redesign #aiai .faq-wrap{max-width:900px;margin:0 auto;padding:0;background:none}
+html.ac-redesign #aiai .faq-header{display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center;margin-bottom:35px}
+html.ac-redesign #aiai .faq-header h2{font-size:clamp(54px,10vw,100px);line-height:1;color:var(--ac-berry);margin:0!important}.faq-header>span{font-size:16px!important;color:#745664!important;letter-spacing:.2em}
+html.ac-redesign #aiai .faq-item{margin:0;border:0;border-bottom:1px solid var(--ac-line);background:none;border-radius:0;overflow:visible}
+html.ac-redesign #aiai .faq-q{background:none;padding:22px 35px 22px 0;color:var(--ac-ink);font-size:15px;font-weight:750;line-height:1.7;border:0;position:relative}
+html.ac-redesign #aiai .faq-q:after{color:#745664;background:none}
+html.ac-redesign #aiai .faq-a{padding:0 0!important;font-size:14px;line-height:1.9;color:#78616d;overflow:hidden;max-height:0;transition:max-height .3s var(--ac-ease)}
+html.ac-redesign #aiai #reviews-dark{background:#111;color:var(--ac-cream)}
+html.ac-redesign #aiai .review-dark-wrapper{background:none!important;max-width:1100px;margin:auto;padding:0!important}
+html.ac-redesign #aiai .review-dark-wrapper>h2{color:var(--ac-pink);text-align:center;font-size:clamp(28px,4.5vw,48px)}
+html.ac-redesign #aiai .overall-rating-container{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}.average-score{color:var(--ac-pink)!important;font-size:19px!important}.rating-stars .star.full{background:var(--ac-pink)!important}
+html.ac-redesign #aiai .review-dark-wrapper>p{text-align:center;font-size:12px;color:#e6d4dd99;margin:16px 0 26px}
+html.ac-redesign #aiai .review-scroll-container{overflow-x:auto;padding:0 0 20px;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:var(--ac-pink) transparent}
+html.ac-redesign #aiai .review-wrapper{display:flex;gap:16px;width:100%;padding:0;margin:0;align-items:flex-start}
+html.ac-redesign #aiai .review-block{flex:0 0 100%;width:100%;min-width:0;padding:22px;border-radius:16px;background:#211a1f;color:var(--ac-cream);border:1px solid #e8b8b726;scroll-snap-align:center;box-shadow:none}
+html.ac-redesign #aiai .review-name-and-date{font-size:12px;gap:10px;color:#d6c0cc;display:flex;justify-content:space-between;flex-wrap:wrap}.rating-container{color:var(--ac-pink)!important}.random-product-label{background:#e8b8b715!important;color:#e8b8b7!important;font-size:11px!important}
+html.ac-redesign #aiai .review-content{font-size:15px;color:#f4e8ee;line-height:1.85;margin:16px 0}
+html.ac-redesign #aiai .review-image img{max-height:400px;width:100%;object-fit:contain!important;height:auto!important;border-radius:10px;background:#090709}
+html.ac-redesign #aiai>footer{padding:40px 24px;background:#111;color:#ccbfc5;font-size:11px;line-height:2;text-align:center;border-top:1px solid #ffffff20}
+html.ac-redesign #aiai #aiai-promo{background:var(--ac-soft)!important;padding:44px 20px!important}
+html.ac-redesign #aiai #aiai-promo h2{color:var(--ac-ink)!important;font-size:25px!important;margin-bottom:22px!important}
+html.ac-redesign #aiai #aiai-promo .promo-chip{background:var(--ac-cream);border:1px solid var(--ac-line);border-radius:14px;padding:17px;color:#715261;font-size:13px;opacity:1;transform:none;box-shadow:none;line-height:1.85}
+html.ac-redesign #aiai #aiai-promo .promo-tag{background:var(--ac-ink);color:var(--ac-pink);font-size:10px;padding:4px 9px;border-radius:999px;margin-right:7px}.promo-chip strong{color:var(--ac-berry)!important}
+/* Modal from original commerce source; preview intercepts any order submission. */
+html.ac-redesign #aiai #aiai-sku .sku-modal{z-index:220;background:#17111799;backdrop-filter:blur(4px);padding:0 12px}
+html.ac-redesign #aiai #aiai-sku .sheet{width:100%;max-width:620px;max-height:calc(100dvh - 36px);border-radius:22px;background:var(--ac-cream);color:var(--ac-ink);border:1px solid #e8b8b7;box-shadow:0 25px 80px #0004;overflow:hidden}
+html.ac-redesign #aiai #aiai-sku .sheet>header{padding:18px 20px;background:var(--ac-cream);border-bottom:1px solid var(--ac-line)}
+html.ac-redesign #aiai #aiai-sku .sheet h3{font-size:20px;color:var(--ac-ink);margin:0}
+html.ac-redesign #aiai #aiai-sku .sheet-x{background:var(--ac-pale);color:var(--ac-ink);width:36px;height:36px;border-radius:50%;border:1px solid var(--ac-line);font-size:24px}
+html.ac-redesign #aiai #aiai-sku .sheet .body{background:transparent;padding:0;display:flex;flex-direction:column;max-height:calc(100dvh - 110px)}
+html.ac-redesign #aiai #aiai-sku .body-scroll{overflow:auto;min-height:0;padding:18px}
+html.ac-redesign #aiai #aiai-sku .sheet-top{background:var(--ac-pale);border-radius:12px;box-shadow:none;padding:12px;color:var(--ac-ink);border:1px solid var(--ac-line)}
+html.ac-redesign #aiai #aiai-sku .sheet-top img{width:68px;height:58px;object-fit:contain!important;border-radius:8px}
+html.ac-redesign #aiai #aiai-sku .save-big{font-size:16px;color:var(--ac-berry)}
+html.ac-redesign #aiai #aiai-sku .mini{font-size:11px;color:#75616b;line-height:1.6}
+html.ac-redesign #aiai #aiai-sku .sec-title{font-size:13px;color:#755261;margin:18px 0 10px}
+html.ac-redesign #aiai #aiai-sku .pick-grid{gap:10px;grid-template-columns:1fr}
+html.ac-redesign #aiai #aiai-sku .pick-card{background:white;border:1px solid var(--ac-line);border-radius:12px;padding:12px;grid-template-columns:55px 1fr;min-height:80px}
+html.ac-redesign #aiai #aiai-sku .pick-card img{width:55px;height:55px;object-fit:contain!important;background:#1a1015;border-radius:8px;display:block!important}
+html.ac-redesign #aiai #aiai-sku .pick-card .t .n{color:var(--ac-ink);font-size:13px;line-height:1.5;padding-right:14px}
+html.ac-redesign #aiai #aiai-sku .pick-card .t .p,html.ac-redesign #aiai #aiai-sku .pick-card .new{color:var(--ac-berry);font-size:12px;line-height:1.6}
+html.ac-redesign #aiai #aiai-sku .pick-card .old{color:#917682}
+html.ac-redesign #aiai #aiai-sku .pick-input:checked+.pick-card{border-color:var(--ac-ink);background:var(--ac-pale);box-shadow:inset 0 0 0 1px var(--ac-ink)}
+html.ac-redesign #aiai #aiai-sku .pick-card::after{background:var(--ac-pale);color:#755565;border:0;top:10px;right:10px}
+html.ac-redesign #aiai #aiai-sku .sheet-foot{background:var(--ac-cream);border-top:1px solid var(--ac-line);padding:14px 18px 18px;position:relative}
+html.ac-redesign #aiai #aiai-sku .progress-box{background:var(--ac-pale);border:0;border-radius:10px;padding:12px;color:var(--ac-ink)}
+html.ac-redesign #aiai #aiai-sku .mini-bar{background:#dccad1;border:0;height:5px;margin:8px 0}.mini-bar i{background:var(--ac-berry)!important}
+html.ac-redesign #aiai #aiai-sku .mini.line .value{color:var(--ac-ink)}
+html.ac-redesign #aiai #aiai-sku .sheet .actions{gap:8px;grid-template-columns:1fr 1fr;border:0;margin:10px 0 0;padding:0}
+html.ac-redesign #aiai #aiai-sku .sheet .btn{font-size:12px;min-height:46px;height:auto;border-radius:999px;box-shadow:none;letter-spacing:0;padding:10px 12px;background:var(--ac-ink);color:white;border:1px solid var(--ac-ink);line-height:1.5;text-align:center}
+html.ac-redesign #aiai #aiai-sku .sheet .btn.ghost{background:transparent;color:var(--ac-ink);border:1px solid var(--ac-line)}
+html.ac-redesign #aiai #float-cta{width:min(700px,calc(100% - 24px));left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translate(-50%,160%);background:#fff7f8ed;color:var(--ac-ink);border:1px solid var(--ac-line);border-radius:999px;padding:8px 10px;box-shadow:0 4px 25px #0002;backdrop-filter:blur(12px);z-index:90}
+html.ac-redesign #aiai #float-cta.show{transform:translate(-50%,0)}
+html.ac-redesign #aiai #float-cta .inner{padding:0;display:flex;align-items:center;gap:7px;max-width:none}
+html.ac-redesign #aiai #float-cta .label{display:none}
+html.ac-redesign #aiai #float-pack{min-width:0;width:auto;flex:1;background:transparent;color:var(--ac-ink);border:0;border-radius:0;font-size:11px;padding:8px 2px}
+html.ac-redesign #aiai #float-buy{min-height:42px;background:var(--ac-ink);color:var(--ac-pink);border-radius:999px;border:0;padding:10px 16px;font-size:12px;white-space:nowrap}
+html.ac-redesign #aiai #float-price{font-size:12px;color:var(--ac-berry);white-space:nowrap;order:-1;padding-left:5px}
+.ac-platform-footer{padding:30px 20px 80px;background:var(--ac-pale);font-size:12px;color:#806571;text-align:center}.ac-platform-footer a{text-decoration:underline}.ac-platform-footer img{max-width:30px;max-height:25px;object-fit:contain;display:inline-block;margin:5px}.ac-platform-footer .link,.ac-platform-footer .links{display:flex;gap:15px;flex-wrap:wrap;justify-content:center}.ac-platform-footer h3,.ac-platform-footer h4{font-size:14px}
+.ac-preview-disclosure{text-align:center;font-size:10px;padding:14px 20px 32px;background:var(--ac-pale);color:#8a6a79}
+.ac-checkout-preview{width:min(760px,calc(100% - 24px));max-height:90dvh;border:0;border-radius:22px;padding:22px;background:var(--ac-cream);color:var(--ac-ink);overscroll-behavior:contain}.ac-checkout-preview::backdrop{background:#0008;backdrop-filter:blur(4px)}
+.ac-dialog-top{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px;font-size:18px}.ac-dialog-top button{width:40px;height:40px;border-radius:50%;border:1px solid var(--ac-line);background:transparent;color:var(--ac-ink);font-size:24px}.ac-preview-note{font-size:13px;color:#755666;line-height:1.8;background:var(--ac-soft);padding:16px;border-radius:12px}.ac-go-official{display:block;text-align:center;padding:15px;background:var(--ac-ink);color:var(--ac-pink)!important;border-radius:999px;font-size:15px;margin:20px 0}
+.ac-native-checkout{font-size:13px}.ac-native-checkout h1{font-size:26px}.ac-native-checkout :is(input,select,textarea){width:100%;padding:12px;border:1px solid var(--ac-line);border-radius:10px;background:#fff}.ac-native-checkout input[type=radio],.ac-native-checkout input[type=checkbox]{width:auto}.ac-native-checkout label{display:block;padding:8px 0}.ac-native-checkout button{padding:10px 15px;border-radius:999px;background:var(--ac-soft);border:0}.ac-native-checkout .row{display:flex;flex-wrap:wrap;gap:8px}.ac-native-checkout .form-group{margin:15px 0}.ac-native-checkout .custom-radio{padding:5px 0}.ac-native-checkout :disabled{opacity:.65}.ac-native-checkout img{max-width:70px;max-height:50px;object-fit:contain}.ac-native-checkout #cart-section{padding:20px;border:1px solid var(--ac-line);border-radius:12px}.ac-native-checkout .modal,.ac-native-checkout .d-none,.ac-native-checkout .none{display:none!important}
+/* Native scrolling: no wheel interception, no full-screen scroll pinning. */
+.ac-reveal-ready [data-ac-reveal]{transition:opacity .6s var(--ac-ease),transform .6s var(--ac-ease);opacity:0;transform:translateY(18px)}
+.ac-reveal-ready [data-ac-reveal].ac-in{opacity:1;transform:translateY(0)}
+@media(min-width:600px){html.ac-redesign #aiai .timing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html.ac-redesign #aiai .gender-col{grid-template-columns:repeat(2,minmax(0,1fr))}html.ac-redesign #aiai .ing-card,html.ac-redesign #aiai .rec-card,html.ac-redesign #aiai .review-block{flex-basis:calc(50% - 8px)}html.ac-redesign #aiai #aiai-sku .pick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:992px){
+ .ac-announcement{font-size:12px;padding:9px 24px;min-height:36px}.ac-nav{width:min(1280px,calc(100% - 80px));padding:16px 0}.ac-brand{height:52px}.ac-nav-actions{height:52px;padding:5px}.ac-nav .ac-shop{font-size:14px;padding:10px 24px;height:40px}.ac-nav button{width:40px}.ac-menu{right:max(40px,calc((100% - 1280px)/2));top:90px}
+ html.ac-redesign #aiai .ac-hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:70px;padding:28px max(40px,calc((100% - 1280px)/2)) 36px}
+ .ac-hero-media{grid-column:2;grid-row:1}.ac-hero .slogan{grid-column:1;grid-row:1}.ac-hero-rail{border-radius:18px}
+ html.ac-redesign #aiai .slogan h1{font-size:clamp(44px,4.4vw,66px)!important;line-height:1.22!important;margin:0 0 22px}
+ html.ac-redesign #aiai .slogan .en{font-size:12px;margin-bottom:20px}.slogan .sub{font-size:18px!important}.slogan .legal{font-size:12px!important}.slogan .s-cta{max-width:380px!important}
+ html.ac-redesign #aiai .kpi h3,html.ac-redesign #aiai .kpi .num{font-size:36px!important}.kpi-item>span{font-size:13px!important}
+ html.ac-redesign #aiai>section{padding-top:90px;padding-bottom:90px}
+ html.ac-redesign #aiai #aiai-sku{padding-top:75px;padding-bottom:80px}
+ html.ac-redesign #aiai #aiai-sku #card{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:60px;align-items:start}
+ .ac-product-gallery{position:sticky;top:96px}.ac-product-panel{max-width:520px}.ac-product-gallery .media img{min-height:0}.ac-product-panel .head .title{font-size:34px!important}
+ html.ac-redesign #aiai #features{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr);gap:64px;align-items:center}
+ html.ac-redesign #aiai #features .feat-item{padding:26px}.feat-item h3{font-size:22px!important}.feat-item p{font-size:14px!important}
+ html.ac-redesign #aiai .ing-card,html.ac-redesign #aiai .rec-card,html.ac-redesign #aiai .review-block{flex-basis:calc((100% - 32px)/3)}
+ html.ac-redesign #aiai #aiai-vs-chocolate .stack{grid-template-columns:.85fr 1.15fr;gap:20px}.aiai-card,.plain-card{padding:32px!important}
+ html.ac-redesign #aiai .timing-grid{gap:24px}.timing-caption{padding:26px!important}
+ html.ac-redesign #aiai .cust-rec .header-row{flex-direction:row;text-align:left;align-items:flex-end}.cust-title{text-align:left!important}
+ html.ac-redesign #aiai .faq-wrap{max-width:1040px}.faq-wrap{display:grid;grid-template-columns:280px minmax(0,1fr);column-gap:60px}.faq-header{grid-column:1;grid-row:1/9;position:sticky;top:110px;align-self:start;align-items:flex-start!important;text-align:left!important}.faq-item{grid-column:2}
+}
+@media(max-width:359px){.ac-nav{width:calc(100% - 24px)}.ac-brand{padding-right:12px!important}.ac-brand img{width:30px;height:30px}.ac-brand span{font-size:20px}.ac-nav .ac-shop{padding:8px 10px;font-size:12px}.ac-nav button{width:30px}html.ac-redesign #aiai .slogan h1{font-size:30px!important}html.ac-redesign #aiai .kpi .num{font-size:22px!important}html.ac-redesign #aiai #aiai-sku .top-card .name{font-size:11px}.ac-announcement{font-size:10px}}
+@media(prefers-reduced-motion:reduce){html.ac-redesign{scroll-behavior:auto}html.ac-redesign *,html.ac-redesign *::before,html.ac-redesign *::after{animation:none!important;transition:none!important}.ac-reveal-ready [data-ac-reveal]{opacity:1;transform:none}}
+/* Stable layout geometry overrides the original condensed mobile-card rules. */
+html.ac-redesign body{background:var(--ac-pale)!important}
+html.ac-redesign #aiai .slogan h1 .ac-h1-line{display:block;white-space:nowrap;font-size:inherit;line-height:inherit;color:inherit}
+html.ac-redesign #aiai .slogan h1 .ac-h1-line:last-child{color:#8c304c}
+html.ac-redesign #aiai #aiai-sku .wrap{padding:0!important}
+html.ac-redesign #aiai #aiai-sku #card{padding:0!important}
+html.ac-redesign #aiai #aiai-sku .head{padding:0!important}
+html.ac-redesign #aiai #aiai-sku .info{padding:0!important}
+html.ac-redesign #aiai #aiai-sku .bcard .sub{color:#745664!important}
+html.ac-redesign #aiai #aiai-sku #price{color:var(--ac-ink)!important;font-size:34px!important}
+html.ac-redesign #aiai #aiai-sku .trust>span{background:none;border:0;padding:0;font-size:11px;color:#655158}
+html.ac-redesign #aiai #aiai-sku .head .title{font-size:26px!important}
+html.ac-redesign #aiai #aiai-sku .bubble{font-size:13px!important;min-height:44px}
+html.ac-redesign #aiai #aiai-sku .qty-radio:checked+#card6,html.ac-redesign #aiai #aiai-sku .qty-radio:checked+#card6lube,html.ac-redesign #aiai #aiai-sku .qty-radio:checked+#card12,html.ac-redesign #aiai #aiai-sku .qty-radio:checked+#card24{background:var(--ac-pale)!important;border-color:var(--ac-ink)!important}
+html.ac-redesign #aiai #aiai-sku #card6::before,html.ac-redesign #aiai #aiai-sku #card6lube::before,html.ac-redesign #aiai #aiai-sku #card12::before,html.ac-redesign #aiai #aiai-sku #card24::before{box-shadow:none!important;display:none!important}
+html.ac-redesign #aiai #aiai-sku .row-secondary .name{font-size:13px!important;white-space:nowrap}
+html.ac-redesign #aiai #aiai-sku .ingredient-info .ingredient-note{font-size:12px!important;color:#75616a!important}
+@media(max-width:359px){html.ac-redesign #aiai #aiai-sku .row-secondary .name{font-size:11px!important}}

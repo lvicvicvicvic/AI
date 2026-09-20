@@ -1,0 +1,371 @@
+ @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms;animation-iteration-count:1;transition-duration:.001ms;scroll-behavior:auto} } 
+ /* ===== Theme / Scope ===== */ #aiai-sku{ --bg:#0B0B0E; --card:#121216; --panel:#15151c; --group:#0e0e12; --line:rgba(255,255,255,.12); --text:#fff; --muted:#bfc3cc; --pink:#D36A9D; --pink-hi:#E79BC1; --ring:rgba(211,106,157,.35); --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.45); font-family:system-ui,'Noto Sans TC','Microsoft JhengHei',sans-serif; color:var(--text); background:var(--bg); min-height:auto; scroll-margin-top:96px; position:relative; } #aiai-sku *{box-sizing:border-box} #aiai-sku .wrap{max-width:480px;margin:0 auto;padding:10px} /* ===== Card Shell ===== */ #aiai-sku .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)} #aiai-sku .head{padding:12px 14px 0} #aiai-sku .title{margin:0 0 6px;font:900 16px/1.2 'Noto Sans TC',system-ui} /* ===== Above-the-fold conversion modules ===== */ #aiai-sku .meta-row{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center} #aiai-sku .rating-link{ display:inline-flex;align-items:center;gap:6px; padding:5px 9px;border:1px solid var(--line);border-radius:999px; background:#0f0f14;color:#fff;text-decoration:none;font-weight:900;font-size:12px;line-height:1; } #aiai-sku .rating-link:hover{border-color:#ffffff30} #aiai-sku .rating-link .score{display:inline-flex;align-items:baseline;gap:2px} #aiai-sku .rating-link .den{opacity:.85} #aiai-sku .rating-link .cnt{opacity:.9} #aiai-sku .rating-link .rstars{display:inline-flex;gap:2px} #aiai-sku .rating-link .rstar{ width:13px;height:13px;background:#444; clip-path:polygon(50% 0%,61% 38%,98% 38%,68% 59%,79% 98%,50% 75%,21% 98%,32% 59%,2% 38%,39% 38%); } #aiai-sku .rating-link .rstar.full{background:var(--pink)} #aiai-sku .ship-tip{margin-top:6px;font-size:12px;color:var(--muted);text-align:center;line-height:1.35} #aiai-sku .media{position:relative;background:linear-gradient(180deg,#0f0f14 0%,#0b0b10 100%);display:flex;align-items:center;justify-content:center;border-radius:16px;margin:0 14px;overflow:hidden} #aiai-sku .media img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center bottom;border-radius:12px;margin:0 auto} /* Bubble under image */ #aiai-sku .bubble{display:flex;align-items:center;justify-content:center;gap:8px;width:fit-content;margin:10px auto 0;padding:5px 10px;border-radius:999px;background:var(--pink);color:#000;font-weight:900;font-size:14px;white-space:normal;text-align:center;box-shadow:0 6px 18px rgba(211,106,157,.35)} #aiai-sku .bubble small{opacity:.95} #aiai-sku .info{padding:10px 14px 12px} #aiai-sku .price{margin:8px 0 4px;font-weight:900;letter-spacing:.3px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap} #aiai-sku #price{font-size:24px} #aiai-sku #per{font-size:12px;color:var(--muted);font-weight:600} /* ===== Bundle grid (Top: 1/3/12, Bottom: 6) ===== */ #aiai-sku .bundle{display:grid;gap:10px;margin:10px 0} #aiai-sku .row-top{display:grid;grid-template-columns:.7fr 1.15fr 1.15fr;gap:10px;align-items:stretch;position:relative} #aiai-sku .bcard.xs{padding:8px 8px;text-align:center} #aiai-sku .bcard.xs .name{font-size:13px} #aiai-sku .bcard.xs .sub{font-size:10px} #aiai-sku .row-bottom{display:block;position:relative} /* Hidden radios (keep accessible) */ #aiai-sku .qty-radio{ position:absolute; width:1px;height:1px; opacity:0; pointer-events:none; } #aiai-sku .bcard{position:relative;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#15151c 0%,#121216 100%);padding:10px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;cursor:pointer;min-height:70px;transition:border-color .18s ease, box-shadow .18s ease, transform .15s ease} #aiai-sku .bcard:hover{border-color:#ffffff30} #aiai-sku .qty-radio:checked + .bcard{border-color:var(--pink);box-shadow:0 0 0 2px var(--ring) inset, 0 10px 30px rgba(0,0,0,.35);transform:translateY(-2px)} #aiai-sku .qty-radio:focus-visible + .bcard{outline:2px solid var(--pink-hi);outline-offset:2px} #aiai-sku .bcard .name{font-weight:900;font-size:14px} #aiai-sku .bcard .sub{margin-top:3px;font-size:11px;color:var(--muted)} #aiai-sku .bcard.lg{padding:12px;border-radius:18px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px} #aiai-sku .bcard .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:#1f1f28;color:#fff;border:1px solid var(--line);font-size:12px} /* ===== 6 / 12 片：最划算提示框（只影響這兩個） ===== */ #aiai-sku #card6, #aiai-sku #card12{ background: linear-gradient(180deg, rgba(211,106,157,.14) 0%, #121216 100%); } #aiai-sku #card6::before, #aiai-sku #card12::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 0 0 2px rgba(211,106,157,.22) inset, 0 0 26px rgba(211,106,157,.24); } #aiai-sku #card6::after, #aiai-sku #card12::after{ position:absolute; top:8px; right:8px; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:900; letter-spacing:.2px; color:#000; background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%); box-shadow:0 10px 24px rgba(0,0,0,.35); pointer-events:none; } /* CTA */ #aiai-sku .cta{display:block;width:100%;text-align:center;margin-top:8px;padding:12px 14px;border-radius:14px;background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%);color:#000;text-decoration:none;font-weight:900;letter-spacing:.6px;box-shadow:0 10px 28px rgba(211,106,157,.35)} #aiai-sku .cta:active{transform:translateY(1px)} #aiai-sku .trust{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;color:var(--muted);font-size:12px} #aiai-sku .trust span{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:#0f0f14} /* Sticky CTA (保留，但你原本有關掉，下方有 display:none 強制關閉) */ #aiai-sku .sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;align-items:center;justify-content:center;padding:14px 16px;padding-bottom:calc(14px + env(safe-area-inset-bottom));border-radius:14px;background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%);color:#000;text-decoration:none;font-weight:900;letter-spacing:.6px;box-shadow:0 14px 38px rgba(211,106,157,.35),0 6px 20px rgba(0,0,0,.45);transform:translateY(8px);opacity:.001;transition:opacity .25s ease, transform .25s ease} #aiai-sku .sticky.show{display:flex;opacity:1;transform:translateY(0)} /* Centered Modal (確保最上層) */ #aiai-sku .sku-modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);z-index:2147483647} #aiai-sku .sku-modal.show{display:grid} #aiai-sku .sheet{ position:relative; border-radius:18px; background:#14141b; border:1px solid var(--line); box-shadow:0 20px 60px rgba(0,0,0,.6); max-width:min(380px,92vw); width:min(380px,92vw); max-height:80vh; display:flex; flex-direction:column; transform:scale(.96); opacity:.001; transition:opacity .2s ease, transform .2s ease } #aiai-sku .sku-modal.show .sheet{transform:scale(1);opacity:1} #aiai-sku .sheet header{position:relative;display:flex;align-items:center;justify-content:center;padding:10px 12px;border-bottom:1px solid var(--line)} #aiai-sku .sheet h3{margin:0;font-size:15px;text-align:center;width:100%} #aiai-sku .sheet .sheet-x{ position:absolute; top:6px; right:6px; width:32px; height:32px; border-radius:10px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); color:#fff; font-weight:900; font-size:18px; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; } #aiai-sku .sheet .sheet-x:hover{border-color:rgba(255,255,255,.26);background:rgba(255,255,255,.08)} #aiai-sku .sheet .sheet-x:active{transform:translateY(1px)} #aiai-sku .sheet .sheet-x:focus-visible{outline:2px solid var(--pink-hi);outline-offset:2px} /* 新版：Body 內容可滾動，底部固定「進度框＋按鈕」避免彈窗太長 */ #aiai-sku .sheet .body{ padding:0; flex:1 1 auto; display:flex; flex-direction:column; overflow:hidden; } #aiai-sku .sheet .body-scroll{ padding:10px 12px 8px; flex:1 1 auto; overflow:auto; -webkit-overflow-scrolling:touch; } #aiai-sku .sheet .sheet-foot{ padding:0 12px 12px; flex:0 0 auto; } #aiai-sku .s-head{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;align-items:stretch;text-align:left} #aiai-sku .save-big{font-weight:900;color:#6AD3A7} #aiai-sku .subcopy{color:#bfc3cc;font-size:13px} /* ===== Modal top (choco image) ===== */ #aiai-sku .sheet-top{display:flex;gap:10px;align-items:center} #aiai-sku #sheetChoco{width:56px;height:56px;border-radius:14px;object-fit:cover;border:1px solid var(--line);background:#0f0f14;flex:0 0 56px} #aiai-sku .sheet-top-txt{flex:1;min-width:0} #aiai-sku .sheet-top-txt .save-big{font-size:16px;line-height:1.25} #aiai-sku .sheet-top-txt .mini{margin-top:3px;font-size:12px;color:var(--muted);line-height:1.2} /* Section titles in modal */ #aiai-sku .sec-title{ margin:8px 0 4px; font-size:12px; font-weight:900; color:#fff; letter-spacing:.3px; } /* Pick grid */ #aiai-sku .pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 10px;position:relative} #aiai-sku .addon-grid{grid-template-columns:1fr 1fr} @media (max-width:480px){ #aiai-sku .addon-grid{grid-template-columns:1fr} #aiai-sku .sheet h3{font-size:14px;padding:0 34px} #aiai-sku .pick-grid{grid-template-columns:1fr} #aiai-sku .actions{grid-template-columns:1fr} #aiai-sku .sheet .btn{height:42px;font-size:13px} } #aiai-sku .pick-input{ position:absolute; width:1px;height:1px; opacity:0; pointer-events:none; } #aiai-sku .pick-card{ position:relative; display:grid; grid-template-columns:44px 1fr; gap:8px; align-items:center; border:1px solid var(--line); background:#0f0f14; border-radius:12px; padding:7px; cursor:pointer; transition:border-color .18s ease, box-shadow .18s ease; min-height:68px; min-width:0; } #aiai-sku .pick-card img{width:44px;height:44px;border-radius:10px;object-fit:cover} #aiai-sku .pick-card .t{display:flex;flex-direction:column;gap:2px;min-width:0} #aiai-sku .pick-card .t .n{font-weight:900;font-size:12px;line-height:1.2} #aiai-sku .pick-card .t .p{font-size:12px;color:#e8eaf0;line-height:1.2} #aiai-sku .pick-card .t .p .old{color:var(--muted);text-decoration:line-through;margin-right:6px} #aiai-sku .pick-card .t .p .new{color:#fff;font-weight:900} #aiai-sku .pick-card.mini{min-height:62px} /* compact (no image) */ #aiai-sku .pick-card.simple{ grid-template-columns:1fr; min-height:56px; padding:10px; } #aiai-sku .pick-card.simple img{display:none} /* plus / check mark (pure CSS) */ #aiai-sku .pick-card::after{ content:"+"; position:absolute; top:6px; right:6px; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#1f1f28; border:1px solid var(--line); color:#bfc3cc; font-weight:900; font-size:11px; pointer-events:none; } #aiai-sku .pick-input:checked + .pick-card{ border-color:var(--pink); box-shadow:0 0 0 2px var(--ring) inset; } #aiai-sku .pick-input:checked + .pick-card::after{ content:"✓"; background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%); color:#000; border:none; } #aiai-sku .pick-input:focus-visible + .pick-card{ outline:2px solid var(--pink-hi); outline-offset:2px; } /* ===== Bottom progress box（框框） ===== */ #aiai-sku .progress-box{ border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.04); border-radius:14px; padding:10px 10px; } #aiai-sku .progress-box .mini{ margin:0 0 6px 0; font-size:12px; color:var(--muted); line-height:1.25; } #aiai-sku .progress-box .mini:last-child{margin-bottom:0} /* 進度條 */ #aiai-sku .mini-bar{margin:6px 0 8px;height:8px;border-radius:999px;background:#0f0f14;border:1px solid var(--line);overflow:hidden;position:relative} #aiai-sku .mini-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%)} /* 進度框內三條：總件數/滿額提袋/多省下（無底色） */ #aiai-sku .mini.line{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; background:transparent ; background-color:transparent ; box-shadow:none ; margin:6px 0 0 0; } #aiai-sku .mini.line .label{ color:var(--muted); background:transparent ; background-color:transparent ; } #aiai-sku .mini.line .value{ color:#fff; font-weight:900; white-space:nowrap; text-align:right; background:transparent ; background-color:transparent ; } #aiai-sku .mini.line[data-reached="1"] .value{color:#6AD3A7} /* 強制：滿額提袋 / 總件數 / 多省下，完全無背景/底色（含內層） */ #aiai-sku #bagLine, #aiai-sku #countLine, #aiai-sku #saveLine, #aiai-sku #totalLine{ background:transparent ; background-color:transparent ; box-shadow:none ; border:none ; padding:0 ; border-radius:0 ; } #aiai-sku #bagLine *, #aiai-sku #countLine *, #aiai-sku #saveLine *, #aiai-sku #totalLine *{ background:transparent ; background-color:transparent ; box-shadow:none ; } /* 多省下：粉色 */ #aiai-sku #saveLine .label, #aiai-sku #saveLine .value{ color:var(--pink-hi) ; font-weight:900 ; } /* summary (no background) */ #aiai-sku .summary{ margin-top:8px; padding:0; border-radius:0; background:transparent; border:none; font-size:13px; color:#fff; } #aiai-sku .summary .sum-row{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px; gap:6px; } #aiai-sku .summary .sum-row.total{ border-top:1px dashed rgba(255,255,255,.18); padding-top:8px; margin-top:4px; margin-bottom:0; } #aiai-sku .summary .label{ color:var(--muted); } #aiai-sku .summary .value{ color:#fff; text-align:right; } #aiai-sku .summary .save{ margin-top:2px; font-size:12px; color:#FF8CA4; font-weight:700; } /* Modal buttons */ #aiai-sku .sheet .btn{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 16px;border-radius:12px;text-decoration:none;font-weight:900;letter-spacing:.3px;border:1px solid transparent;transition:transform .12s ease, box-shadow .2s ease, filter .2s ease, background .2s ease, border-color .2s ease} #aiai-sku .sheet .btn.primary{background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%);color:#000;box-shadow:0 10px 26px rgba(211,106,157,.35)} #aiai-sku .sheet .btn.primary:hover{filter:brightness(1.06)} #aiai-sku .sheet .btn.primary:active{transform:translateY(1px)} #aiai-sku .sheet .btn.ghost{background:#1a1a22;color:#fff;border-color:var(--line)} #aiai-sku .sheet .btn.ghost:hover{border-color:#ffffff30} #aiai-sku .sheet .btn:focus-visible{outline:2px solid var(--pink-hi);outline-offset:2px} /* Actions */ #aiai-sku .actions{ margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.12); display:grid; grid-template-columns:1fr 1fr; gap:10px; } #aiai-sku .actions .btn{width:100%} /* 熱修：移除 6 片卡內總價、確保手機 4:3 生效 */ #aiai-sku #card6 .p{display:none } @media (max-width:900px){ #aiai-sku .media{ aspect-ratio:4/3 ; position:relative ; overflow:hidden ; } #aiai-sku .media img{ position:absolute; inset:0; width:100% ; height:100% ; aspect-ratio:auto ; object-fit:cover ; object-position:center bottom ; margin:0 auto ; } } 
+ body:has(#aiai){background:#000;} #aiai{overflow-x:hidden;} /* ========== 全域變數 & 基本設定 ========== */ #aiai{ --bg:#000;--pink:#D36A9D;--dark:#101010;--light:#fff0f7;--faq-bg:#F8A9C8; --radius:12px;--fs:16px;--fs-sm:14px; background:var(--bg);color:var(--pink);font-size:var(--fs);line-height:1.8; } #aiai *{box-sizing:border-box;margin:0;padding:0;font-family:"Noto Sans TC",sans-serif} #aiai h1,#aiai h2,#aiai h3,#aiai h4{font-weight:700;color:var(--pink)} #aiai a{color:var(--pink);text-decoration:none} #aiai section{width:100%} #aiai section.compact{padding-block:24px} #aiai section.spaced{padding-block:50px} /* ===== 桌面：Benefit Grid 特別排版 ===== */ @media(min-width:992px){ #aiai .benefit-list{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;padding:0} #aiai .benefit-item{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;transition:.25s;min-height:240px} #aiai .benefit-item:hover{transform:translateY(-6px)} #aiai .bi-btn{flex-direction:column;gap:12px;width:100%} #aiai .bi-btn img{width:90px;height:90px} #aiai .bi-btn strong{font-size:1.05rem} #aiai .bi-btn span{font-size:.85rem} #aiai .bi-img{width:100%} } /* ===== Hero & Slogan ===== */ #aiai .hero img{display:block;width:100%;height:auto} #aiai .divider-img{width:70%;max-width:340px;margin:-130px auto -80px;display:block} #aiai .slogan{text-align:center;padding-bottom:20px} #aiai .slogan h1{font-size:1.35rem;margin-bottom:4px;white-space:nowrap;letter-spacing:-.02em} #aiai .slogan .en{font-size:.75rem;color:var(--light);margin-bottom:10px} #aiai .slogan .sub{font-size:.9rem} #aiai .slogan .legal{font-size:.78rem;color:var(--light);opacity:.9;margin-top:6px} #aiai .slogan .s-cta{margin-top:12px;display:inline-flex;align-items:center;gap:10px;background:var(--pink);color:#000;font-weight:900;padding:10px 16px;border-radius:14px} #aiai .slogan .s-cta:hover{filter:brightness(0.95)} @media(min-width:768px){ #aiai .slogan h1{font-size:2.2rem} #aiai .slogan .en,#aiai .slogan .sub{font-size:1rem} } /* ===== KPI ===== */ #aiai .kpi{display:flex;flex-direction:column;gap:26px;align-items:center} #aiai .kpi-item{text-align:center} #aiai .kpi-num{display:flex;align-items:flex-end;justify-content:center;width:100%} #aiai .kpi-num .num{font-size:2.3rem;font-weight:700} #aiai .kpi-num .unit{margin-left:4px} #aiai .kpi-item span:last-child{font-size:.85rem} @media(min-width:768px){ #aiai .kpi{flex-direction:row;gap:44px} #aiai .kpi-num .num{font-size:3rem} } /* ===== Features ===== */ #aiai #features{display:grid;grid-template-columns:1fr clamp(120px,35vw,180px);gap:16px;align-items:start;position:relative;} #aiai .feat-list{display:flex;flex-direction:column;gap:34px;padding-inline:20px} #aiai .feat-item h3{font-size:1.25rem;margin-bottom:6px} #aiai .feat-item p{font-size:var(--fs-sm);color:var(--light)} #aiai .feat-img{ width:100%;height:auto;object-fit:contain;position:-webkit-sticky;position:sticky;top:20vh;transition:transform .15s linear; } @media(max-width:767px){#aiai .feat-img{position:relative;top:auto;}} /* ===== Ingredients Swiper ===== */ #aiai .ing-sec h2{text-align:center;margin:60px auto 28px} #aiai .swiper-ing{padding:6px} #aiai .ing-card{background:var(--dark);border-radius:var(--radius);overflow:hidden;width:82vw;max-width:330px} #aiai .ing-img{width:100%;height:170px;object-fit:cover} #aiai .ing-body{padding:18px} #aiai .ing-body h3{font-size:1.1rem;margin-bottom:4px} #aiai .ing-body h4{font-size:.82rem;color:var(--light);margin-bottom:8px} #aiai .ing-body p{font-size:var(--fs-sm);color:var(--light)} #aiai .swiper-button-prev,#aiai .swiper-button-next{display:none} @media(min-width:768px){ #aiai .ing-card{width:260px} #aiai .swiper-ing{padding:8px} #aiai .swiper-button-prev,#aiai .swiper-button-next{display:block;color:var(--pink);top:4px;font-weight:700} #aiai .swiper-button-prev{right:72px} #aiai .swiper-button-next{right:24px} } /* ===== Timing Grid ===== */ #aiai .timing-sec{background:#111;padding:52px 0} #aiai .timing-sec h2{text-align:center;font-size:1.9rem;margin-bottom:38px} #aiai .timing-grid{display:grid;gap:24px;padding:0 20px} @media(min-width:600px){#aiai .timing-grid{grid-template-columns:repeat(2,1fr)}} @media(min-width:992px){#aiai .timing-grid{grid-template-columns:repeat(4,1fr)}} #aiai .timing-item img{display:block;width:100%;height:auto;border-radius:var(--radius);object-fit:cover} #aiai .timing-caption{margin-top:10px;text-align:center} #aiai .timing-caption strong{display:block;font-size:.96rem;margin-bottom:2px} #aiai .timing-caption span{font-size:.82rem;color:var(--light)} /* ===== Benefit Cards ===== */ #aiai .benefit-list{display:grid;gap:18px;list-style:none;padding:0 20px} @media(min-width:480px){#aiai .benefit-list{grid-template-columns:repeat(2,1fr)}} @media(min-width:992px){#aiai .benefit-list{grid-template-columns:repeat(5,1fr)}} #aiai .benefit-item{background:var(--dark);border:1px solid var(--pink);border-radius:var(--radius);padding:16px} #aiai .bi-btn{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;padding:0;color:inherit;cursor:pointer;text-align:left} #aiai .bi-btn img{width:70px;height:70px;border-radius:50%;object-fit:cover} #aiai .bi-btn strong{font-size:.94rem} #aiai .bi-btn span{font-size:.82rem;color:var(--light)} /* 預設收合，點擊才展開 */ #aiai .bi-img{overflow:hidden;max-height:0;transition:max-height .35s ease} #aiai .bi-img img{width:100%;border-radius:var(--radius);margin-top:10px} /* ===== Reviews (暗色版) ===== */ #aiai #reviews-dark.spaced{padding-block:20px} #aiai .review-dark-wrapper{width:92%;max-width:700px;margin:0 auto;background:var(--dark);border:1px solid var(--pink);border-radius:var(--radius);padding:20px} #aiai .review-dark-wrapper h2{text-align:center;margin-bottom:1rem;font-size:1.2rem;color:var(--pink)} #aiai .overall-rating-container{display:flex;align-items:center;justify-content:center;margin-bottom:15px} #aiai .average-score{font-size:16px;font-weight:700;margin-right:10px;color:var(--pink)} #aiai .rating-stars{display:flex;font-size:18px} #aiai .rating-stars .star{width:20px;height:20px;background:#444;margin-right:2px;clip-path:polygon(50% 0%,61% 38%,98% 38%,68% 59%,79% 98%,50% 75%,21% 98%,32% 59%,2% 38%,39% 38%)} #aiai .star.full{background:var(--pink)} #aiai .star.half{background:linear-gradient(to right,var(--pink) 50%,#444 50%)} #aiai .review-dark-wrapper p{text-align:center;color:var(--light);font-size:13px;margin-bottom:8px} #aiai .review-scroll-container{max-height:350px;overflow-y:auto;border:1px solid var(--pink);padding:15px;border-radius:8px;background:#181818} #aiai .review-wrapper{display:flex;flex-direction:column;gap:20px} #aiai .review-block{border:1px solid #333;padding:15px;border-radius:8px;background:#1e1e1e;box-shadow:0 2px 5px rgba(0,0,0,.35)} #aiai .review-name-and-date{display:flex;justify-content:space-between;font-size:13px;font-weight:700;border-bottom:1px solid #333;padding-bottom:5px;margin-bottom:8px;color:var(--pink)} #aiai .rating-container{font-size:16px;color:var(--pink);letter-spacing:2px;margin-bottom:8px} #aiai .random-product-label{display:inline-block;padding:2px 8px;font-size:12px;border-radius:12px;background:var(--pink);color:#000;margin-bottom:8px} #aiai .review-content{white-space:pre-line;color:var(--light);margin-bottom:5px} #aiai .review-image img{width:150px;height:150px;object-fit:cover;border-radius:8px;border:1px solid #555;margin-top:8px} /* ===== Effect Cards (男女感受) ===== */ #aiai .effect-sec h2{text-align:center} #aiai .effect-btns{display:flex;gap:12px;justify-content:center;margin:30px 0 18px} #aiai .gender-btn{flex:1;background:#111;border:1px solid var(--pink);padding:9px;border-radius:var(--radius);font-size:.85rem;cursor:pointer;color:#fff} #aiai .gender-btn.active{background:var(--pink);color:#000;font-weight:700} #aiai .effect-slide{padding:6px} #aiai .gender-col{background:var(--dark);border-radius:var(--radius);padding:18px} #aiai .card{background:#181818;border-radius:var(--radius);padding:16px;margin-bottom:12px} #aiai .card h4{font-size:.95rem;margin-bottom:4px} #aiai .card p{font-size:var(--fs-sm);color:var(--light)} /* ===== FAQ ===== */ #aiai .faq-wrap{background:var(--faq-bg);border-radius:20px;padding:44px 20px;color:#000} #aiai .faq-header{display:flex;align-items:end;gap:10px;margin-bottom:24px} #aiai .faq-header h2{font-size:3rem;color:#000} #aiai .faq-header span{font-size:1rem;letter-spacing:3px;color:#000} #aiai .faq-item{padding:12px 0;border-bottom:1px solid rgba(0,0,0,.25)} #aiai .faq-q{cursor:pointer;font-weight:700;position:relative;padding-right:22px;font-size:.93rem} #aiai .faq-q::after{content:"+";position:absolute;right:0;font-size:1.4rem;transition:.3s} #aiai .faq-q.open::after{transform:rotate(45deg)} #aiai .faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease;font-size:var(--fs-sm);padding-left:12px;white-space:pre-line} /* ===== Footer ===== */ #aiai footer{background:var(--dark);text-align:center;color:#777;font-size:.78rem;padding:32px 0} /* ===== Mid CTA ===== */ #aiai .mid-cta{padding:24px 16px;background:#0f0f0f} #aiai .mid-cta .wrap{max-width:820px;margin:0 auto;border:1px solid var(--pink);border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px} #aiai .mid-cta p{color:#fff;margin:0;font-size:.95rem} #aiai .mid-cta .btn{background:var(--pink);color:#000;font-weight:900;padding:10px 14px;border-radius:12px;text-decoration:none} /* ===== Floating CTA ===== */ #aiai #float-cta{ position:fixed; left:50%; transform:translateX(-50%); bottom:-140px; z-index:2147483646; width:min(940px, calc(100% - 24px)); background:rgba(20,20,24,.86); border:1px solid #ffffff22; border-radius:18px; box-shadow:0 14px 46px rgba(0,0,0,.6); backdrop-filter:saturate(160%) blur(10px); transition:bottom .35s ease; } #aiai #float-cta.show{ bottom:12px; } #aiai #float-cta .inner{ display:flex; align-items:center; gap:12px; padding:10px 12px; } #aiai #float-cta .label{ color:#fff; font-size:.9rem; opacity:.9; } #aiai #float-cta select{ -webkit-appearance:none; appearance:none; outline:0; border:1px solid #ffffff33; background:#0f0f14; color:#fff; border-radius:12px; padding:10px 36px 10px 12px; font-weight:700; letter-spacing:.3px; background-image: linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%); background-position: right 12px top 18px, right 6px top 18px; background-size: 8px 8px, 8px 8px; background-repeat:no-repeat; } #aiai #float-cta .btn{ margin-left:auto; background:var(--pink); color:#000; font-weight:900; border:none; border-radius:14px; padding:12px 16px; cursor:pointer; } #aiai #float-cta .price{ color:#fff; font-size:14px; margin-left:8px; opacity:.9; } @media(max-width:640px){ #aiai #float-cta .inner{ gap:10px; } #aiai #float-cta .label{ display:none; } #aiai #float-cta select{ flex:1; width:50%; min-width:0; } #aiai #float-cta .btn{ padding:12px 14px; white-space:nowrap; } #aiai #float-cta .price{ display:none; } } #aiai #float-cta{ pointer-events:auto; } #aiai #float-cta:not(.show){ pointer-events:none; } #aiai .bi-btn:focus, #aiai .gender-btn:focus, #aiai .nav-btn:focus, #aiai .cta:focus, #aiai #float-cta .btn:focus, #aiai #float-cta select:focus { outline:2px solid(var(--pink)); outline-offset:2px; } /* 彈窗開啟時，避免浮動 CTA 蓋到彈窗 */ body.aiai-sheet-open #float-cta{ display:none ; } 
+ /* ===== Theme / Scope ===== */ #aiai-sku{ --bg:#0B0B0E; --card:#121216; --panel:#15151c; --group:#0e0e12; --line:rgba(255,255,255,.12); --text:#fff; --muted:#bfc3cc; --pink:#D36A9D; --pink-hi:#E79BC1; --ring:rgba(211,106,157,.35); --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.45); font-family:system-ui,'Noto Sans TC','Microsoft JhengHei',sans-serif; color:var(--text); background:var(--bg); min-height:auto; scroll-margin-top:96px; position:relative; } #aiai-sku *{box-sizing:border-box} #aiai-sku .wrap{max-width:480px;margin:0 auto;padding:10px} /* ===== Card Shell ===== */ #aiai-sku .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)} #aiai-sku .head{padding:12px 14px 0} #aiai-sku .title{margin:0 0 6px;font:900 16px/1.2 'Noto Sans TC',system-ui} /* ===== Above-the-fold conversion modules ===== */ #aiai-sku .meta-row{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center} #aiai-sku .rating-link{ display:inline-flex;align-items:center;gap:6px; padding:5px 9px;border:1px solid var(--line);border-radius:999px; background:#0f0f14;color:#fff;text-decoration:none;font-weight:900;font-size:12px;line-height:1; } #aiai-sku .rating-link:hover{border-color:#ffffff30} #aiai-sku .rating-link .score{display:inline-flex;align-items:baseline;gap:2px} #aiai-sku .rating-link .den{opacity:.85} #aiai-sku .rating-link .cnt{opacity:.9} #aiai-sku .rating-link .rstars{display:inline-flex;gap:2px} #aiai-sku .rating-link .rstar{ width:13px;height:13px;background:#444; clip-path:polygon(50% 0%,61% 38%,98% 38%,68% 59%,79% 98%,50% 75%,21% 98%,32% 59%,2% 38%,39% 38%); } #aiai-sku .rating-link .rstar.full{background:var(--pink)} #aiai-sku .ship-tip{margin-top:6px;font-size:12px;color:var(--muted);text-align:center;line-height:1.35} #aiai-sku .media{position:relative;background:linear-gradient(180deg,#0f0f14 0%,#0b0b10 100%);display:flex;align-items:center;justify-content:center;border-radius:16px;margin:0 14px;overflow:hidden} #aiai-sku .media img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center bottom;border-radius:12px;margin:0 auto} /* Bubble under image */ #aiai-sku .bubble{display:flex;align-items:center;justify-content:center;gap:8px;width:fit-content;margin:10px auto 0;padding:5px 10px;border-radius:999px;background:var(--pink);color:#000;font-weight:900;font-size:14px;white-space:normal;text-align:center;box-shadow:0 6px 18px rgba(211,106,157,.35)} #aiai-sku .bubble small{opacity:.95} #aiai-sku .info{padding:10px 14px 12px} #aiai-sku .price{margin:8px 0 4px;font-weight:900;letter-spacing:.3px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap} #aiai-sku #price{font-size:24px} #aiai-sku #per{font-size:12px;color:var(--muted);font-weight:600} /* ===== Bundle grid (Top: 1/3/12, Bottom: 6) ===== */ #aiai-sku .bundle{ display:grid; gap:18px; /* ✅ 調大：避免 6片「外飄標籤」撞到上排 */ margin:10px 0 } #aiai-sku .row-top{display:grid;grid-template-columns:.7fr 1.15fr 1.15fr;gap:10px;align-items:stretch;position:relative} #aiai-sku .bcard.xs{padding:8px 8px;text-align:center} #aiai-sku .bcard.xs .name{font-size:13px} #aiai-sku .bcard.xs .sub{font-size:10px} #aiai-sku .row-bottom{display:block;position:relative} /* Hidden radios (keep accessible) */ #aiai-sku .qty-radio{ position:absolute; width:1px;height:1px; opacity:0; pointer-events:none; } #aiai-sku .bcard{position:relative;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#15151c 0%,#121216 100%);padding:10px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;cursor:pointer;min-height:70px;transition:border-color .18s ease, box-shadow .18s ease, transform .15s ease} #aiai-sku .bcard:hover{border-color:#ffffff30} #aiai-sku .qty-radio:checked + .bcard{border-color:var(--pink);box-shadow:0 0 0 2px var(--ring) inset, 0 10px 30px rgba(0,0,0,.35);transform:translateY(-2px)} #aiai-sku .qty-radio:focus-visible + .bcard{outline:2px solid var(--pink-hi);outline-offset:2px} #aiai-sku .bcard .name{font-weight:900;font-size:14px} #aiai-sku .bcard .sub{margin-top:3px;font-size:11px;color:var(--muted)} #aiai-sku .bcard.lg{padding:12px;border-radius:18px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px} #aiai-sku .bcard .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:#1f1f28;color:#fff;border:1px solid var(--line);font-size:12px} /* ===== 6 / 12 片：最划算提示框（只影響這兩個） ===== */ #aiai-sku #card6, #aiai-sku #card12{ background: linear-gradient(180deg, rgba(211,106,157,.14) 0%, #121216 100%); overflow:visible; /* ✅ 確保標籤可以飄出框框 */ } #aiai-sku #card6::before, #aiai-sku #card12::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 0 0 2px rgba(211,106,157,.22) inset, 0 0 26px rgba(211,106,157,.24); } #aiai-sku #card6::after, #aiai-sku #card12::after{ position:absolute; /* ✅ 改這裡：標籤飄到「框框外圍」(不蓋字) */ top:-14px; right:-8px; z-index:6; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:900; letter-spacing:.2px; color:#000; background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%); box-shadow:0 10px 24px rgba(0,0,0,.35); pointer-events:none; white-space:nowrap; } #aiai-sku #card6::after{content:"人氣首選";} #aiai-sku #card12::after{content:"單價最省";} /* CTA */ #aiai-sku .cta{display:block;width:100%;text-align:center;margin-top:8px;padding:12px 14px;border-radius:14px;background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%);color:#000;text-decoration:none;font-weight:900;letter-spacing:.6px;box-shadow:0 10px 28px rgba(211,106,157,.35)} #aiai-sku .cta:active{transform:translateY(1px)} #aiai-sku .trust{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;color:var(--muted);font-size:12px} #aiai-sku .trust span{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:#0f0f14} /* Sticky CTA (保留，但你原本有關掉，下方有 display:none 強制關閉) */ #aiai-sku .sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;align-items:center;justify-content:center;padding:14px 16px;padding-bottom:calc(14px + env(safe-area-inset-bottom));border-radius:14px;background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%);color:#000;text-decoration:none;font-weight:900;letter-spacing:.6px;box-shadow:0 14px 38px rgba(211,106,157,.35),0 6px 20px rgba(0,0,0,.45);transform:translateY(8px);opacity:.001;transition:opacity .25s ease, transform .25s ease} #aiai-sku .sticky.show{display:flex;opacity:1;transform:translateY(0)} /* Centered Modal (確保最上層) */ #aiai-sku .sku-modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);z-index:2147483647} #aiai-sku .sku-modal.show{display:grid} #aiai-sku .sheet{ position:relative; border-radius:18px; background:#14141b; border:1px solid var(--line); box-shadow:0 20px 60px rgba(0,0,0,.6); max-width:min(380px,92vw); width:min(380px,92vw); max-height:80vh; display:flex; flex-direction:column; transform:scale(.96); opacity:.001; transition:opacity .2s ease, transform .2s ease } #aiai-sku .sku-modal.show .sheet{transform:scale(1);opacity:1} #aiai-sku .sheet header{position:relative;display:flex;align-items:center;justify-content:center;padding:10px 12px;border-bottom:1px solid var(--line)} #aiai-sku .sheet h3{margin:0;font-size:15px;text-align:center;width:100%} #aiai-sku .sheet .sheet-x{ position:absolute; top:6px; right:6px; width:32px; height:32px; border-radius:10px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); color:#fff; font-weight:900; font-size:18px; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; } #aiai-sku .sheet .sheet-x:hover{border-color:rgba(255,255,255,.26);background:rgba(255,255,255,.08)} #aiai-sku .sheet .sheet-x:active{transform:translateY(1px)} #aiai-sku .sheet .sheet-x:focus-visible{outline:2px solid var(--pink-hi);outline-offset:2px} /* 新版：Body 內容可滾動，底部固定「進度框＋按鈕」避免彈窗太長 */ #aiai-sku .sheet .body{ padding:0; flex:1 1 auto; display:flex; flex-direction:column; overflow:hidden; } #aiai-sku .sheet .body-scroll{ padding:10px 12px 8px; flex:1 1 auto; overflow:auto; -webkit-overflow-scrolling:touch; } #aiai-sku .sheet .sheet-foot{ padding:0 12px 12px; flex:0 0 auto; } #aiai-sku .s-head{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;align-items:stretch;text-align:left} #aiai-sku .save-big{font-weight:900;color:#6AD3A7} #aiai-sku .subcopy{color:#bfc3cc;font-size:13px} /* ===== Modal top (choco image) ===== */ #aiai-sku .sheet-top{display:flex;gap:10px;align-items:center} #aiai-sku #sheetChoco{width:56px;height:56px;border-radius:14px;object-fit:cover;border:1px solid var(--line);background:#0f0f14;flex:0 0 56px} #aiai-sku .sheet-top-txt{flex:1;min-width:0} #aiai-sku .sheet-top-txt .save-big{font-size:16px;line-height:1.25} #aiai-sku .sheet-top-txt .mini{margin-top:3px;font-size:12px;color:var(--muted);line-height:1.2} /* Section titles in modal */ #aiai-sku .sec-title{ margin:8px 0 4px; font-size:12px; font-weight:900; color:#fff; letter-spacing:.3px; } /* Pick grid */ #aiai-sku .pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 10px;position:relative} #aiai-sku .addon-grid{grid-template-columns:1fr 1fr} @media (max-width:480px){ #aiai-sku .addon-grid{grid-template-columns:1fr} #aiai-sku .sheet h3{font-size:14px;padding:0 34px} #aiai-sku .pick-grid{grid-template-columns:1fr} #aiai-sku .actions{grid-template-columns:1fr} #aiai-sku .sheet .btn{height:42px;font-size:13px} } #aiai-sku .pick-input{ position:absolute; width:1px;height:1px; opacity:0; pointer-events:none; } #aiai-sku .pick-card{ position:relative; display:grid; grid-template-columns:44px 1fr; gap:8px; align-items:center; border:1px solid var(--line); background:#0f0f14; border-radius:12px; padding:7px; cursor:pointer; transition:border-color .18s ease, box-shadow .18s ease; min-height:68px; min-width:0; } #aiai-sku .pick-card img{width:44px;height:44px;border-radius:10px;object-fit:cover} #aiai-sku .pick-card .t{display:flex;flex-direction:column;gap:2px;min-width:0} #aiai-sku .pick-card .t .n{font-weight:900;font-size:12px;line-height:1.2} #aiai-sku .pick-card .t .p{font-size:12px;color:#e8eaf0;line-height:1.2} #aiai-sku .pick-card .t .p .old{color:var(--muted);text-decoration:line-through;margin-right:6px} #aiai-sku .pick-card .t .p .new{color:#fff;font-weight:900} #aiai-sku .pick-card.mini{min-height:62px} /* compact (no image) */ #aiai-sku .pick-card.simple{ grid-template-columns:1fr; min-height:56px; padding:10px; } #aiai-sku .pick-card.simple img{display:none} /* plus / check mark (pure CSS) */ #aiai-sku .pick-card::after{ content:"+"; position:absolute; top:6px; right:6px; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#1f1f28; border:1px solid var(--line); color:#bfc3cc; font-weight:900; font-size:11px; pointer-events:none; } #aiai-sku .pick-input:checked + .pick-card{ border-color:var(--pink); box-shadow:0 0 0 2px var(--ring) inset; } #aiai-sku .pick-input:checked + .pick-card::after{ content:"✓"; background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%); color:#000; border:none; } #aiai-sku .pick-input:focus-visible + .pick-card{ outline:2px solid var(--pink-hi); outline-offset:2px; } /* ===== Bottom progress box（框框） ===== */ #aiai-sku .progress-box{ border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.04); border-radius:14px; padding:10px 10px; } #aiai-sku .progress-box .mini{ margin:0 0 6px 0; font-size:12px; color:var(--muted); line-height:1.25; } #aiai-sku .progress-box .mini:last-child{margin-bottom:0} /* 進度條 */ #aiai-sku .mini-bar{margin:6px 0 8px;height:8px;border-radius:999px;background:#0f0f14;border:1px solid var(--line);overflow:hidden;position:relative} #aiai-sku .mini-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%)} /* 進度框內三條：總件數/滿額提袋/多省下（無底色） */ #aiai-sku .mini.line{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; background:transparent ; background-color:transparent ; box-shadow:none ; margin:6px 0 0 0; } #aiai-sku .mini.line .label{ color:var(--muted); background:transparent ; background-color:transparent ; } #aiai-sku .mini.line .value{ color:#fff; font-weight:900; white-space:nowrap; text-align:right; background:transparent ; background-color:transparent ; } #aiai-sku .mini.line[data-reached="1"] .value{color:#6AD3A7} /* 強制：滿額提袋 / 總件數 / 多省下，完全無背景/底色（含內層） */ #aiai-sku #bagLine, #aiai-sku #countLine, #aiai-sku #saveLine, #aiai-sku #totalLine{ background:transparent ; background-color:transparent ; box-shadow:none ; border:none ; padding:0 ; border-radius:0 ; } #aiai-sku #bagLine *, #aiai-sku #countLine *, #aiai-sku #saveLine *, #aiai-sku #totalLine *{ background:transparent ; background-color:transparent ; box-shadow:none ; } /* 多省下：粉色 */ #aiai-sku #saveLine .label, #aiai-sku #saveLine .value{ color:var(--pink-hi) ; font-weight:900 ; } /* Modal buttons */ #aiai-sku .sheet .btn{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 16px;border-radius:12px;text-decoration:none;font-weight:900;letter-spacing:.3px;border:1px solid transparent;transition:transform .12s ease, box-shadow .2s ease, filter .2s ease, background .2s ease, border-color .2s ease} #aiai-sku .sheet .btn.primary{background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%);color:#000;box-shadow:0 10px 26px rgba(211,106,157,.35)} #aiai-sku .sheet .btn.primary:hover{filter:brightness(1.06)} #aiai-sku .sheet .btn.primary:active{transform:translateY(1px)} #aiai-sku .sheet .btn.ghost{background:#1a1a22;color:#fff;border-color:var(--line)} #aiai-sku .sheet .btn.ghost:hover{border-color:#ffffff30} #aiai-sku .sheet .btn:focus-visible{outline:2px solid var(--pink-hi);outline-offset:2px} /* Actions */ #aiai-sku .actions{ margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.12); display:grid; grid-template-columns:1fr 1fr; gap:10px; } #aiai-sku .actions .btn{width:100%} /* 熱修：移除 6 片卡內總價、確保手機 4:3 生效 */ #aiai-sku #card6 .p{display:none } @media (max-width:900px){ #aiai-sku .media{ aspect-ratio:4/3 ; position:relative ; overflow:hidden ; } #aiai-sku .media img{ position:absolute; inset:0; width:100% ; height:100% ; aspect-ratio:auto ; object-fit:cover ; object-position:center bottom ; margin:0 auto ; } } /* 你原本強制關掉 sticky（保留） */ #aiai-sku .sticky{ display:none ; } 
+
+/* ===== AIAI AOV 選片卡修正：保留原黑粉質感，上排三短卡＋下排六片長卡 ===== */
+#aiai-sku .bundle{display:grid;gap:10px;margin:10px 0}
+#aiai-sku .row-top.row-secondary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-items:stretch;position:relative}
+#aiai-sku .row-bottom.row-main{display:block;position:relative;margin-top:0}
+#aiai-sku .top-card{min-height:78px;padding:9px 7px;text-align:center;align-items:center;justify-content:center;border-radius:16px;background:linear-gradient(180deg,#15151c 0%,#121216 100%)}
+#aiai-sku .top-card .name{font-size:13px;line-height:1.18;font-weight:900}
+#aiai-sku .top-card .sub{font-size:10px;line-height:1.22;color:var(--muted);margin-top:4px}
+#aiai-sku .top-card .mini-price{margin-top:6px;font-size:12px;line-height:1;font-weight:900;color:#fff}
+#aiai-sku .bcard.lg{min-height:104px;border-radius:20px;padding:14px 13px;grid-template-columns:auto 1fr auto;gap:11px}
+#aiai-sku .bcard.lg .name{font-size:18px;line-height:1.22}
+#aiai-sku .bcard.lg .sub{font-size:12px;line-height:1.35;color:#d8d9df}
+#aiai-sku .bcard.lg .value{margin-top:6px;font-size:12px;font-weight:900;color:var(--pink-hi);line-height:1.3}
+#aiai-sku .bcard.lg .long-price{font-size:17px;font-weight:900;color:var(--pink-hi);white-space:nowrap;text-align:right}
+#aiai-sku .compare-price{font-size:13px;color:rgba(191,195,204,.75);text-decoration:line-through;text-decoration-thickness:1.5px;font-weight:800;white-space:nowrap}
+#aiai-sku .top-card .mini-price{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px;line-height:1}
+#aiai-sku .old-price{font-size:10px;color:rgba(191,195,204,.76);text-decoration:line-through;text-decoration-thickness:1.4px;font-weight:800;white-space:nowrap}
+#aiai-sku .new-price{font-size:12px;color:#fff;font-weight:900;white-space:nowrap}
+#aiai-sku .bcard.lg .long-price{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+#aiai-sku .bcard.lg .long-price .old-price{font-size:11px}
+#aiai-sku .bcard.lg .long-price .new-price{font-size:17px;color:var(--pink-hi);font-weight:900}
+#aiai-sku #card6{background:radial-gradient(circle at top right,rgba(211,106,157,.28),transparent 38%),linear-gradient(180deg,rgba(211,106,157,.14),#121216 88%);overflow:visible;border-color:rgba(211,106,157,.42)}
+#aiai-sku #card6::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 2px rgba(211,106,157,.22) inset,0 0 26px rgba(211,106,157,.20)}
+#aiai-sku #card6::after{content:"人氣首選";position:absolute;top:-10px;right:10px;z-index:6;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.2px;color:#000;background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%);box-shadow:0 10px 24px rgba(0,0,0,.35);pointer-events:none;white-space:nowrap}
+/* 移除舊版 12/24/6lube 外飄標籤，避免上排太擠 */
+#aiai-sku #card12,#aiai-sku #card24{background:linear-gradient(180deg,#15151c 0%,#121216 100%) ;overflow:hidden }
+#aiai-sku #card12::before,#aiai-sku #card12::after,#aiai-sku #card24::before,#aiai-sku #card24::after,#aiai-sku #card6lube::before,#aiai-sku #card6lube::after{display:none ;content:none ;box-shadow:none }
+#aiai-sku .entry-options{margin-top:10px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#0f0f14;overflow:hidden}
+#aiai-sku .entry-options summary{list-style:none;cursor:pointer;padding:10px 12px;color:#bfc3cc;font-size:12px;font-weight:900;text-align:center}
+#aiai-sku .entry-options summary::-webkit-details-marker{display:none}
+#aiai-sku .entry-options summary::after{content:"⌄";margin-left:6px;color:var(--pink-hi)}
+#aiai-sku .entry-options[open] summary::after{content:"⌃"}
+#aiai-sku .entry-grid{display:grid;grid-template-columns:1fr;gap:8px;padding:0 10px 10px}
+#aiai-sku .entry-card{min-height:60px;text-align:center;align-items:center}
+#aiai-sku .entry-card .name{font-size:13px}
+#aiai-sku .entry-card .sub{font-size:10px}
+#aiai-sku #addonGrid{margin-bottom:10px}
+#aiai-sku #morePackGrid{margin-top:6px}
+
+/* ===== 使用者要求：選片按鈕卡不顯示價格，價格只保留在上方大價格區 ===== */
+#aiai-sku .top-card .mini-price,
+#aiai-sku .bcard.lg .long-price{display:none ;}
+#aiai-sku .bcard.lg{grid-template-columns:auto 1fr ;}
+@media(max-width:380px){
+  #aiai-sku .row-top.row-secondary{gap:6px}
+  #aiai-sku .top-card{padding:8px 5px;min-height:76px}
+  #aiai-sku .top-card .name{font-size:12px}
+  #aiai-sku .top-card .sub{font-size:9px}
+  #aiai-sku .top-card .mini-price{font-size:11px}
+  #aiai-sku .top-card .mini-price .old-price{font-size:9px}
+  #aiai-sku .top-card .mini-price .new-price{font-size:11px}
+  #aiai-sku .bcard.lg .name{font-size:16px}
+  #aiai-sku .bcard.lg .long-price{font-size:15px}
+}
+
+/* ===== 緊湊版：降低選片卡高度＋薄化 6 片主卡（保留原黑粉風格） ===== */
+#aiai-sku .wrap{padding:6px 8px }
+#aiai-sku .card{border-radius:20px }
+#aiai-sku .head{padding:10px 12px 0 }
+#aiai-sku .title{font-size:15px ;margin-bottom:4px }
+#aiai-sku .meta-row{margin-top:6px ;gap:6px }
+#aiai-sku .rating-link{font-size:11px ;padding:4px 8px }
+#aiai-sku .rating-link .rstar{width:12px ;height:12px }
+#aiai-sku .media{margin:0 12px ;aspect-ratio:16/10 ;border-radius:14px }
+#aiai-sku .media img{height:100% ;aspect-ratio:auto ;object-fit:cover ;border-radius:12px }
+#aiai-sku .bubble{margin:7px auto 0 ;padding:4px 9px ;font-size:13px }
+#aiai-sku .info{padding:8px 12px 10px }
+#aiai-sku .price{margin:5px 0 2px ;gap:8px }
+#aiai-sku #price{font-size:22px }
+#aiai-sku .compare-price{font-size:12px }
+#aiai-sku #per{font-size:11px }
+#aiai-sku .bundle{gap:7px ;margin:7px 0 }
+#aiai-sku .row-top.row-secondary{gap:7px }
+#aiai-sku .top-card{min-height:64px ;padding:7px 5px ;border-radius:14px }
+#aiai-sku .top-card .name{font-size:12px ;line-height:1.16 }
+#aiai-sku .top-card .sub{font-size:9px ;line-height:1.18 ;margin-top:3px }
+#aiai-sku .bcard.lg{min-height:76px ;border-radius:16px ;padding:9px 11px ;gap:8px }
+#aiai-sku #card6 .chip{width:30px ;height:30px ;padding:0 ;justify-content:center ;font-size:13px }
+#aiai-sku .bcard.lg .name{font-size:16px ;line-height:1.16 }
+#aiai-sku .bcard.lg .sub{font-size:11px ;line-height:1.24 ;margin-top:2px }
+#aiai-sku .bcard.lg .value{font-size:10px ;line-height:1.2 ;margin-top:3px }
+#aiai-sku #card6{border-color:rgba(211,106,157,.32) }
+#aiai-sku #card6::before{box-shadow:0 0 0 1px rgba(211,106,157,.18) inset,0 0 16px rgba(211,106,157,.16) }
+#aiai-sku #card6::after{top:-8px ;right:9px ;padding:3px 8px ;font-size:10px ;box-shadow:0 8px 18px rgba(0,0,0,.30) }
+#aiai-sku .entry-options{margin-top:8px }
+#aiai-sku .entry-options summary{padding:8px 10px ;font-size:11px }
+#aiai-sku .entry-card{min-height:50px }
+#aiai-sku .cta{margin-top:8px ;padding:11px 13px ;border-radius:13px }
+#aiai-sku .ship-tip{margin-top:5px ;font-size:11px }
+#aiai-sku .trust{margin-top:6px ;gap:5px ;font-size:11px }
+#aiai-sku .trust span{padding:4px 8px }
+@media(max-width:380px){
+  #aiai-sku .top-card{min-height:60px ;padding:6px 4px }
+  #aiai-sku .bcard.lg{min-height:72px ;padding:8px 10px }
+  #aiai-sku .bcard.lg .name{font-size:15px }
+  #aiai-sku .bcard.lg .sub{font-size:10px }
+}
+
+
+
+/* ===== AIAI 2026-06-23 選片卡營收版：主推 6 片 / 6片＋熱感瑪卡潤滑液，其餘降權保留 ===== */
+#aiai-sku .primary-packs{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch;position:relative}
+#aiai-sku .primary-packs .bcard.lg{min-height:66px ;padding:9px 10px ;border-radius:16px ;grid-template-columns:28px 1fr ;gap:8px ;align-items:center }
+#aiai-sku .primary-packs .bcard.lg .chip{width:28px ;height:28px ;padding:0 ;justify-content:center ;font-size:13px }
+#aiai-sku .primary-packs .bcard.lg .name{font-size:14px ;line-height:1.12 ;white-space:nowrap }
+#aiai-sku .primary-packs .bcard.lg .sub{display:block ;font-size:10px ;line-height:1.18 ;margin-top:3px ;color:#d8d9df ;white-space:nowrap }
+#aiai-sku .primary-packs .bcard.lg .value{display:none }
+#aiai-sku #card6,#aiai-sku #card6lube{background:radial-gradient(circle at top right,rgba(211,106,157,.28),transparent 38%),linear-gradient(180deg,rgba(211,106,157,.14),#121216 88%) ;border-color:rgba(211,106,157,.42) ;overflow:visible }
+#aiai-sku #card6::before,#aiai-sku #card6lube::before{content:"" ;display:block ;position:absolute ;inset:0 ;border-radius:inherit ;pointer-events:none ;box-shadow:0 0 0 1px rgba(211,106,157,.18) inset,0 0 16px rgba(211,106,157,.16) }
+#aiai-sku #card6::after,#aiai-sku #card6lube::after{position:absolute ;top:-8px ;right:9px ;z-index:6 ;padding:3px 8px ;border-radius:999px ;font-size:10px ;font-weight:900 ;letter-spacing:.2px ;color:#000 ;background:linear-gradient(90deg,var(--pink) 0%, var(--pink-hi) 100%) ;box-shadow:0 8px 18px rgba(0,0,0,.30) ;pointer-events:none ;white-space:nowrap ;display:block }
+#aiai-sku #card6::after{content:"限時優惠中" }
+#aiai-sku #card6lube::after{content:"完整準備" }
+#aiai-sku #card6::after,#aiai-sku #card6lube::after{display:none ;content:none }
+#aiai-sku .secondary-title{margin:2px 0 -2px;text-align:center;color:#bfc3cc;font-size:11px;font-weight:900;letter-spacing:.3px}
+#aiai-sku .row-top.row-secondary{grid-template-columns:repeat(3,1fr) ;gap:7px }
+#aiai-sku .row-secondary .top-card{min-height:58px ;padding:6px 5px ;border-radius:14px ;opacity:.82}
+#aiai-sku .row-secondary .top-card .name{font-size:12px ;line-height:1.16 }
+#aiai-sku .row-secondary .top-card .sub{font-size:9px ;line-height:1.18 ;margin-top:3px }
+#aiai-sku .qty-radio:checked + .top-card{opacity:1}
+#aiai-sku .ingredient-info{margin-top:10px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#0f0f14;overflow:hidden}
+#aiai-sku .ingredient-info summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;color:#fff}
+#aiai-sku .ingredient-info summary::-webkit-details-marker{display:none}
+#aiai-sku .ingredient-info summary::after{content:"+";display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.16);color:var(--pink-hi);font-weight:900;flex:0 0 22px}
+#aiai-sku .ingredient-info[open] summary::after{content:"-"}
+#aiai-sku .ingredient-title{display:block;font-size:13px;font-weight:900;line-height:1.2}
+#aiai-sku .ingredient-sub{display:block;margin-top:3px;font-size:11px;color:var(--muted);font-weight:700;line-height:1.35}
+#aiai-sku .ingredient-panel{padding:0 12px 12px;border-top:1px solid rgba(255,255,255,.10)}
+#aiai-sku .ingredient-grid{display:grid;gap:8px;margin-top:10px}
+#aiai-sku .ingredient-row{display:grid;grid-template-columns:74px 1fr;gap:8px;align-items:start;padding:8px;border-radius:10px;background:rgba(255,255,255,.035)}
+#aiai-sku .ingredient-row b{font-size:12px;line-height:1.45;color:var(--pink-hi)}
+#aiai-sku .ingredient-row span{font-size:12px;line-height:1.5;color:#e8eaf0}
+#aiai-sku .ingredient-note{margin:9px 2px 0;color:var(--muted);font-size:11px;line-height:1.45}
+@media(max-width:360px){
+  #aiai-sku .primary-packs{grid-template-columns:1fr}
+  #aiai-sku .primary-packs .bcard.lg{min-height:60px }
+}
+@media(max-width:380px){
+  #aiai-sku .ingredient-row{grid-template-columns:1fr;gap:3px}
+}
+
+
+    #aiai-vs-chocolate{
+      --pink:#D36A9D;
+      --pink2:#E79BC1;
+      --bg:#050506;
+      --card:#121216;
+      --line:rgba(255,255,255,.12);
+      --text:#fff;
+      --muted:#bfc3cc;
+      background:var(--bg);
+      color:var(--text);
+      font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+      padding:34px 14px;
+    }
+
+    #aiai-vs-chocolate *{
+      box-sizing:border-box;
+    }
+
+    #aiai-vs-chocolate .wrap{
+      max-width:520px;
+      margin:0 auto;
+    }
+
+    #aiai-vs-chocolate .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:5px 10px;
+      border:1px solid rgba(211,106,157,.45);
+      border-radius:999px;
+      color:var(--pink2);
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:10px;
+      background:rgba(211,106,157,.08);
+    }
+
+    #aiai-vs-chocolate h2{
+      color:#fff;
+      font-size:24px;
+      line-height:1.25;
+      letter-spacing:-.03em;
+      margin:0 0 8px;
+      font-weight:900;
+    }
+
+    #aiai-vs-chocolate h2 b{
+      color:var(--pink2);
+    }
+
+    #aiai-vs-chocolate .lead{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+      margin:0 0 18px;
+    }
+
+    #aiai-vs-chocolate .lead strong{
+      color:#fff;
+      font-weight:900;
+    }
+
+    #aiai-vs-chocolate .stack{
+      display:grid;
+      gap:10px;
+    }
+
+    #aiai-vs-chocolate .plain-card,
+    #aiai-vs-chocolate .aiai-card{
+      border-radius:18px;
+      padding:16px;
+      border:1px solid var(--line);
+      background:var(--card);
+    }
+
+    #aiai-vs-chocolate .plain-card{
+      opacity:.72;
+      background:#0d0d10;
+    }
+
+    #aiai-vs-chocolate .aiai-card{
+      border-color:rgba(211,106,157,.55);
+      background:
+        radial-gradient(circle at top right, rgba(211,106,157,.28), transparent 42%),
+        linear-gradient(180deg,#181820 0%,#111116 100%);
+      box-shadow:0 18px 44px rgba(0,0,0,.45), inset 0 0 0 1px rgba(211,106,157,.18);
+    }
+
+    #aiai-vs-chocolate .card-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    #aiai-vs-chocolate .name{
+      font-size:15px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    #aiai-vs-chocolate .tag{
+      font-size:11px;
+      font-weight:900;
+      border-radius:999px;
+      padding:4px 8px;
+      white-space:nowrap;
+    }
+
+    #aiai-vs-chocolate .plain-card .tag{
+      color:#aaa;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+    }
+
+    #aiai-vs-chocolate .aiai-card .tag{
+      color:#000;
+      background:linear-gradient(90deg,var(--pink),var(--pink2));
+    }
+
+    #aiai-vs-chocolate .one-line{
+      margin:0;
+      font-size:15px;
+      line-height:1.55;
+      color:#fff;
+      font-weight:800;
+    }
+
+    #aiai-vs-chocolate .plain-card .one-line{
+      color:#bfc3cc;
+      font-weight:700;
+    }
+
+    #aiai-vs-chocolate .points{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    #aiai-vs-chocolate .point{
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      color:#f4f4f5;
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    #aiai-vs-chocolate .dot{
+      width:18px;
+      height:18px;
+      flex:0 0 18px;
+      border-radius:50%;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(90deg,var(--pink),var(--pink2));
+      color:#000;
+      font-size:12px;
+      font-weight:900;
+      margin-top:1px;
+    }
+
+    #aiai-vs-chocolate .mini-note{
+      margin:13px 0 0;
+      color:#bfc3cc;
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    #aiai-vs-chocolate .cta{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      margin-top:16px;
+      padding:13px 16px;
+      border-radius:14px;
+      background:linear-gradient(90deg,var(--pink),var(--pink2));
+      color:#000;
+      text-decoration:none;
+      font-weight:900;
+      font-size:15px;
+      box-shadow:0 12px 28px rgba(211,106,157,.28);
+    }
+
+    @media(min-width:768px){
+      #aiai-vs-chocolate{
+        padding:46px 18px;
+      }
+
+      #aiai-vs-chocolate .wrap{
+        max-width:760px;
+      }
+
+      #aiai-vs-chocolate h2{
+        font-size:32px;
+        text-align:center;
+      }
+
+      #aiai-vs-chocolate .eyebrow{
+        display:flex;
+        width:max-content;
+        margin-left:auto;
+        margin-right:auto;
+      }
+
+      #aiai-vs-chocolate .lead{
+        text-align:center;
+        max-width:620px;
+        margin-left:auto;
+        margin-right:auto;
+      }
+
+      #aiai-vs-chocolate .stack{
+        grid-template-columns:.88fr 1.12fr;
+        align-items:stretch;
+      }
+    }
+  
+ .cust-rec {--pink:#ff7ab3;--gap:16px;background:#121212;color:#e5e5e5;padding:60px 0;overflow:hidden;} .cust-rec .header-row{display:flex;justify-content:space-between;align-items:center;padding:0 20px 30px;} .cust-rec .cust-title{font-size:28px;font-weight:700;margin:0;} .cust-rec .arrow-box{display:flex;gap:10px;} .cust-rec .nav-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:var(--pink);padding:6px 14px;border-radius:18px;font-size:14px;cursor:pointer;user-select:none;} .cust-rec .card-track{display:flex;gap:var(--gap);overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding:0 20px 25px;} .cust-rec .card-track::-webkit-scrollbar{display:none;} .cust-rec .rec-card{flex:0 0 260px;scroll-snap-align:start;background:#1d1d1d;border-radius:16px;padding:18px;box-shadow:0 2px 6px rgba(0,0,0,.45);display:flex;flex-direction:column;min-width:0;} .cust-rec .top{display:flex;align-items:center;gap:12px;margin-bottom:10px;} .cust-rec .avatar{width:42px;height:42px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--pink);} .cust-rec .status{display:inline-flex;align-items:center;justify-content:center;background:var(--pink);color:#121212;font-size:12px;padding:4px 12px;min-width:60px;border-radius:12px;margin-left:6px;line-height:1.2;} .cust-rec .name{font-size:16px;font-weight:600;color:#fff;margin:0;line-height:1;} .cust-rec .stars{font-size:14px;color:var(--pink);} .cust-rec .rec-card img{width:100%;aspect-ratio:5/6;object-fit:cover;border-radius:12px;margin-bottom:10px;} .cust-rec .comment{font-size:14px;line-height:1.5;color:#d0d0d0;background:rgba(255,255,255,0.1);padding:12px;margin:0 0 16px;border-radius:8px;} @media(max-width:600px){.cust-rec .cust-title{font-size:22px}.cust-rec .arrow-box{display:none}} 
+ .promo-chip{background:#111;border:1px solid #D36A9D40;border-radius:8px;padding:12px 18px;font-size:15px;color:#fff;display:inline-block;box-shadow:0 2px 6px rgba(0,0,0,.25);transform:translateY(20px);opacity:0;transition:all .45s ease var(--delay,0s);} .promo-chip.active{transform:translateY(0);opacity:1;} .promo-tag{background:#D36A9D;color:#000;font-size:13px;font-weight:700;padding:4px 12px;border-radius:14px;margin-right:8px;} @media(max-width:600px){.promo-chip{font-size:14px;padding:10px 14px;}.promo-tag{font-size:12px;padding:3px 10px;border-radius:12px;}} 
+ #aiai-sku #price{ color: var(--pink) ; } #aiai-sku .sheet .btn.primary{ background: linear-gradient(90deg, var(--pink) 0%, var(--pink-hi) 100%) ; color:#000 ; border-color: transparent ; } #aiai-sku .soldout{ position:absolute; top:6px; right:6px; padding:4px 10px; border-radius:999px; background:linear-gradient(90deg,#D36A9D 0%, #E79BC1 100%); color:#000; font-weight:900; font-size:12px; box-shadow:0 6px 18px rgba(211,106,157,.35); z-index:3; } #aiai-sku .is-disabled{ opacity:.45; filter:grayscale(1); pointer-events:none; user-select:none; } #aiai-sku .is-disabled, #aiai-sku .is-disabled *{ cursor: not-allowed ; } /* 你原本強制關掉 sticky（保留） */ #aiai-sku .sticky{ display:none ; } 
+ #aiai img, #aiai-sku img { opacity: 1 ; visibility: visible ; transition: none ; min-height: 1px; } #aiai .divider-img { display: block ; margin-left: auto ; margin-right: auto ; } #aiai-sku .media img { opacity: 1 ; z-index: 1 ; } /* 防炸：結帳區/購物車/1shop 商品彈窗圖片強制可見（避免 lazy 狀態卡住造成整頁像「圖片消失」） */ #one-checkout img, .one-checkout img, .cart-wrap img, .cart-content img, .modal img { opacity: 1 ; visibility: visible ; transition: none ; } /* 自家彈窗鎖頁（避免與 Bootstrap 的 body.modal-open 衝突） */ body.aiai-sheet-open { overflow: hidden ; } 

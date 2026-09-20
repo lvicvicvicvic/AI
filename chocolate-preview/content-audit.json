@@ -1,0 +1,237 @@
+{
+  "sourceUrl": "https://www.aiai.com.tw/",
+  "sourceCapture": "2026-09-20",
+  "originalMarketingTextNodes": 298,
+  "missingOrRewrittenTextNodes": {},
+  "originalImageNodes": 44,
+  "preservedImageNodes": 44,
+  "allCapturedImageBytesIdentical": true,
+  "ingredientCards": 10,
+  "recommendationCards": 5,
+  "faqItems": 8,
+  "customerReviewCards": 9,
+  "platformCheckout": "Read-only original captured checkout UI; real orders go to original website",
+  "unrequestedGummyOfferAdded": false,
+  "sourceImages": [
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/zRo4LO6m3AmmpM5J3pr2d90e/original-2.png.avif",
+      "local": "assets/d3ac7394a288d13f.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/dqpOVABK3244XG6mNrkRwEv7/original-2.png.avif",
+      "local": "assets/4ccc244ce0e054e9.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/7b8Wmjk2l5941LwXlvD1VZrP/original-2.jpg.avif",
+      "local": "assets/ec3c80768f7403a5.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/5yxD7ZmWlk1WAKvkYXgBqvRQ/original.png",
+      "local": "assets/1541eb4d0cd3d9be.png",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/Wqybvx25N9yk0Po6NREOMVPo/600x-2.png.avif",
+      "local": "assets/b31014297acadaa6.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/1LPZao453vJogP5r3QAR86mM/600x-2.jpg.avif",
+      "local": "assets/4985702862db3343.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/wP6vpqMBNgzQmORdld7DaZ0y/original-2.jpg.avif",
+      "local": "assets/aa9fcd5ab8968bc1.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/7b8Wmjk2l5941LwXlvD1VZrP/original-2.jpg.avif",
+      "local": "assets/ec3c80768f7403a5.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/a1A4ovQm3KXqAGdDlDxz6OWE/original-2.png.avif",
+      "local": "assets/f3e91337c21c6df3.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/Kyg9vWx8NyKJvP4G3GJP14Zm/original-2.jpg.avif",
+      "local": "assets/393724eb68a45440.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/A7dLy5pv31vvRG82lXg0QzKr/original-2.png.avif",
+      "local": "assets/cd38dc2ea6037be8.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/0nMRz1wGlRwwo9byNV9Kjv6E/original-2.png.avif",
+      "local": "assets/88b00dcc9d557e87.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/o4a0bwXWNWbbQwgjlGgE1yzv/original-2.png.avif",
+      "local": "assets/ec40c9806bf890aa.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/wAjo1QaDle44K26Z390xLGMJ/original-2.png.avif",
+      "local": "assets/8d851c19e0290766.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/Wqybvx25N9yy1EQgNREOMVPo/original-2.png.avif",
+      "local": "assets/6a45d0ab5d92441f.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/dqpOVABK3244X6vONrkRwEv7/original-2.png.avif",
+      "local": "assets/8034075d945a7681.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/A7dLy5pv31vvR8yrlXg0QzKr/original-2.png.avif",
+      "local": "assets/86c0a3b0c35dc61d.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/AZajx5K9lEmm57ywlPJR4Wd2/original-2.png.avif",
+      "local": "assets/3a7d3785242595e0.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/xQdpkWj03aeeX2QG39by6aRo/original-2.png.avif",
+      "local": "assets/c256ca11783ecfaa.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/j7m6e8BLYJAAzQZgNaG5RKMX/original-2.png.avif",
+      "local": "assets/003abae42e8937c9.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/zRo4LO6m3Ammp59G3pr2d90e/original-2.png.avif",
+      "local": "assets/0e6c6b2251fde205.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/W4d5DeM03xjeO1V7NpOKbqkB/original-2.jpg.avif",
+      "local": "assets/c6f18a5757428868.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/ZLjRK1AGl0AZWaKJNV6DPJEw/original-2.jpg.avif",
+      "local": "assets/36f98424a1178227.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/dqpOVABK324x9rVmNrkRwEv7/original-2.jpg.avif",
+      "local": "assets/4b87f6f6038ba991.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/41brG7JDYpJb6nv4lxW5ywvg/original-2.jpg.avif",
+      "local": "assets/fa1ff4a7aae7111e.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/ZLjRK1AGl0AZkJaxNV6DPJEw/original-2.png.avif",
+      "local": "assets/21c51f0e2f3733b7.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/W4d5DeM03xjjP8D7NpOKbqkB/original-2.jpg.avif",
+      "local": "assets/caf3781acb334900.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/w560gEeAlo00R4D5NOqrx1ab/original-2.jpg.avif",
+      "local": "assets/7793199b82af568e.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/LWx9yMqPlG77j451lEpb1wO7/original-2.jpg.avif",
+      "local": "assets/9a544aeab0b40c73.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/41brG7JDYpJJX7D4lxW5ywvg/original-2.jpg.avif",
+      "local": "assets/4fd89ab7b97b10d1.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/Kyg9vWx8NyKKR54P3GJP14Zm/original-2.png.avif",
+      "local": "assets/53fb0ac10802c090.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/rAW85emGlnzzmyyLlyok6vBL/original-2.jpg.avif",
+      "local": "assets/1ee4ce6561307485.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/1LPZao453vJJq25e3QAR86mM/original-2.png.avif",
+      "local": "assets/40e894c2cf856f7f.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/1LPZao453vJJyQvk3QAR86mM/original-2.jpg.avif",
+      "local": "assets/515c6885aeaf00f9.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/Gr1Lb8a63ZLLQrbeNEAXx24D/original-2.png.avif",
+      "local": "assets/7e01045f9330e22d.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/0nMRz1wGlRwwo9edNV9Kjv6E/original-2.png.avif",
+      "local": "assets/42ad92d568b03bfe.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/0nMRz1wGlRwwo9ZGNV9Kjv6E/original-2.jpg.avif",
+      "local": "assets/5644c713915ede43.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/41brG7JDYpJJm44wlxW5ywvg/original-2.jpg.avif",
+      "local": "assets/13ea86f539a3cbea.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/DoBrmR7VlwMMbLAJY8wbGZKL/original-2.png.avif",
+      "local": "assets/d9454af0ab68d30a.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/5yxD7ZmWlk11mLzBYXgBqvRQ/original-2.jpg.avif",
+      "local": "assets/f8a7ce7d4b82edbf.avif",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/zRo4LO6m3AmL69a83pr2d90e/original-2.jpg.avif",
+      "local": "assets/bfa82d52953c1989.avif",
+      "verified": true
+    },
+    {
+      "source": "https://down-tw.img.susercontent.com/file/tw-11134103-7rasd-m5caqb79hux97a.webp",
+      "local": "assets/d5e6b594339546cb.webp",
+      "verified": true
+    },
+    {
+      "source": "https://down-tw.img.susercontent.com/file/tw-11134103-7ras8-m61006rlxvsmdf.webp",
+      "local": "assets/0af3a2135861f45d.webp",
+      "verified": true
+    },
+    {
+      "source": "https://img.1shop.tw/ybm25PaMjNezyvE0vYQxp9Gl/Kyg9vWx8NyKJvP4G3GJP14Zm/original-2.jpg.avif",
+      "local": "assets/393724eb68a45440.avif",
+      "verified": true
+    }
+  ]
+}
