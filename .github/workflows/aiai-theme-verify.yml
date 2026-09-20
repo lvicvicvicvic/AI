@@ -1,0 +1,94 @@
+name: Verify applied AIAI black pink theme
+on:
+  push:
+    branches: ['qa/aiai-black-pink-20260920']
+    paths: ['.github/workflows/aiai-theme-verify.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 326ff3bfac9e7770d32cc137c03d80a21dbad8d5
+          fetch-depth: 0
+      - run: |
+          python3 -m pip -q install playwright requests
+          python3 -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1
+      - name: Check live delivery, palette, layout and scratch interaction
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, subprocess, threading, http.server, functools, requests, shutil, concurrent.futures
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('theme-verification');out.mkdir(exist_ok=True)
+          shutil.copytree('site',out/'site',dirs_exist_ok=True)
+          sha='326ff3bfac9e7770d32cc137c03d80a21dbad8d5'
+          pinned='https://rawcdn.githack.com/lvicvicvicvic/AI/'+sha+'/site/index.html?offer=play'
+          stable='https://raw.githack.com/lvicvicvicvic/AI/main/site/index.html?offer=play'
+          report={'commit':sha,'changed_site_files':subprocess.check_output(['git','diff','--name-only','b46f100090513a66906df059f1678649faf6563c',sha,'--','site'],text=True).splitlines(),'network':[],'screens':[],'errors':[]}
+          def check(url):
+              try:
+                  r=requests.get(url,timeout=35)
+                  cssurl=url.split('index.html')[0]+'v5-polish.css'
+                  css=requests.get(cssurl,timeout=35)
+                  return {'url':url,'status':r.status_code,'html':r.headers.get('content-type'),'css_status':css.status_code,'theme_applied':'--aiai-bg: #111111' in css.text}
+              except Exception as e:return {'url':url,'error':str(e)}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:report['network']=list(pool.map(check,[pinned,stable]))
+          handler=functools.partial(http.server.SimpleHTTPRequestHandler,directory='site')
+          server=http.server.ThreadingHTTPServer(('127.0.0.1',8765),handler)
+          threading.Thread(target=server.serve_forever,daemon=True).start()
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for label,width,height in [('mobile',390,844),('desktop',1440,1000)]:
+                  page=browser.new_page(viewport={'width':width,'height':height},device_scale_factor=1,is_mobile=label=='mobile',has_touch=label=='mobile')
+                  errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+                  used=pinned if any(x.get('url')==pinned and x.get('theme_applied') and x.get('status')==200 for x in report['network']) else 'http://127.0.0.1:8765/index.html?offer=play'
+                  try:
+                      try:page.goto(used,wait_until='networkidle',timeout=60000)
+                      except Exception:
+                          used='http://127.0.0.1:8765/index.html?offer=play'
+                          page.goto(used,wait_until='networkidle',timeout=20000)
+                      page.locator('#aiai-welcome-offer').wait_for(state='visible',timeout=10000)
+                      page.screenshot(path=str(out/(label+'-welcome.png')))
+                      for card in page.locator('[data-scratch-card]').all()[:3]:card.click()
+                      page.locator('[data-offer-result]').wait_for(state='visible',timeout=10000)
+                      assert page.locator('[data-offer-line]').get_attribute('href')=='https://lin.ee/mO5jVM6'
+                      page.screenshot(path=str(out/(label+'-reward.png')))
+                      page.locator('[data-welcome-close]').click()
+                      page.locator('#aiai-welcome-offer').wait_for(state='hidden')
+                      page.wait_for_timeout(500)
+                      palette=page.evaluate('''()=>{const c=s=>{const x=getComputedStyle(document.querySelector(s));return {background:x.backgroundColor,color:x.color}};return {hero:c('.v5-home-hero'),button:c('.v5-hero-action .v5-offer-button'),body:c('body'),overflow:document.documentElement.scrollWidth>innerWidth}}''')
+                      assert palette['hero']['background']=='rgb(17, 17, 17)',palette
+                      assert palette['button']['background']=='rgb(232, 184, 183)',palette
+                      assert not palette['overflow'],palette
+                      page.screenshot(path=str(out/(label+'-home.png')))
+                      for y in range(0,int(page.evaluate('document.documentElement.scrollHeight')),600):
+                          page.evaluate('(y)=>scrollTo(0,y)',y);page.wait_for_timeout(60)
+                      page.wait_for_timeout(700)
+                      page.evaluate('scrollTo(0,0)');page.wait_for_timeout(500)
+                      page.screenshot(path=str(out/(label+'-full.png')),full_page=True)
+                      for selector,name in [('#buy','purchase'),('#faq','faq')]:
+                          page.locator(selector).scroll_into_view_if_needed();page.wait_for_timeout(350)
+                          page.screenshot(path=str(out/(label+'-'+name+'.png')))
+                      images=page.locator('img').evaluate_all('(es)=>es.filter(e=>!e.complete||e.naturalWidth===0).map(e=>e.src)')
+                      report['screens'].append({'device':label,'source':used,'palette':palette,'scratch_reveal':True,'line_link_preserved':True,'broken_images':images,'js_errors':errors})
+                  except Exception as e:
+                      report['errors'].append({'device':label,'error':str(e),'js_errors':errors})
+                      page.screenshot(path=str(out/(label+'-error.png')))
+                  page.close()
+              browser.close()
+          server.shutdown()
+          (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          assert report['changed_site_files']==['site/v5-polish.css'],report['changed_site_files']
+          assert not report['errors'],report['errors']
+          assert all(not x['js_errors'] and not x['broken_images'] for x in report['screens'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-black-pink-verified
+          path: theme-verification
+          retention-days: 14
