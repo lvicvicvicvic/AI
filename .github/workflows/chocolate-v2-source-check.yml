@@ -1,0 +1,42 @@
+name: Read current chocolate checkout source
+on:
+  push:
+    branches: [preview/chocolate-conversion-v2-20260921]
+    paths: ['.github/workflows/chocolate-v2-source-check.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read public storefront only
+        run: |
+          python -m pip -q install requests beautifulsoup4
+          python - <<'PY'
+          import pathlib, requests, json, re
+          from bs4 import BeautifulSoup
+          out=pathlib.Path('source-check');out.mkdir()
+          url='https://www.aiai.com.tw/'
+          r=requests.get(url,timeout=40);r.raise_for_status()
+          (out/'official.html').write_text(r.text)
+          s=BeautifulSoup(r.text,'html.parser')
+          result={'url':url,'status':r.status_code,'scripts':[]}
+          for i,n in enumerate(s.select('script[src]')):
+              src=n.get('src','')
+              if 'static.1shop' in src and ('main' in src or 'vendor' in src):
+                  rr=requests.get(src,timeout=40);rr.raise_for_status()
+                  name='storefront-'+str(i)+'.js';(out/name).write_text(rr.text)
+                  result['scripts'].append({'url':src,'file':name})
+          for i,n in enumerate(s.select('script:not([src])')):
+              t=n.get_text()
+              if 'PACK_TO_ID' in t or '_pageData' in t:
+                  (out/('inline-'+str(i)+'.js')).write_text(t)
+          (out/'report.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+          print(json.dumps(result,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chocolate-v2-source-check
+          path: source-check
+          retention-days: 3
