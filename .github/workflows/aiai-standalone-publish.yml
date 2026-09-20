@@ -1,0 +1,130 @@
+name: Publish standalone AIAI black pink site
+on:
+  push:
+    branches: [publish/aiai-black-pink-standalone-20260920]
+    paths: ['.github/workflows/aiai-standalone-publish.yml']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser verification tools
+        run: |
+          python3 -m pip -q install requests playwright cryptography
+          python3 -m playwright install --with-deps chromium > /tmp/aiai-browser-install.log 2>&1
+      - name: Publish separate site and test anonymous access
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,mimetypes,hashlib,concurrent.futures,shutil,time,base64,os
+          import requests
+          from cryptography.hazmat.primitives import serialization,hashes
+          from cryptography.hazmat.primitives.asymmetric import padding
+          from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('standalone-result');out.mkdir(exist_ok=True)
+          site=out/'site';shutil.copytree('site',site,dirs_exist_ok=True)
+          html=site/'index.html'
+          html.write_text(html.read_text().replace('content="#e8b8b7" name="theme-color"','content="#111111" name="theme-color"'))
+          assert 'AIAI BLACK x BRAND PINK' in (site/'v5-polish.css').read_text()
+          files=[]
+          for f in sorted(site.rglob('*')):
+              if not f.is_file():continue
+              rel=f.relative_to(site).as_posix()
+              mime=mimetypes.guess_type(rel)[0] or 'application/octet-stream'
+              if rel.endswith('.avif'):mime='image/avif'
+              if rel.endswith('.js'):mime='text/javascript; charset=utf-8'
+              if rel.endswith('.html'):mime='text/html; charset=utf-8'
+              if rel.endswith('.css'):mime='text/css; charset=utf-8'
+              files.append({'path':rel,'size':f.stat().st_size,'contentType':mime,'hash':hashlib.sha256(f.read_bytes()).hexdigest()})
+          headers={'X-HereNow-Client':'chatgpt/direct-api','Content-Type':'application/json'}
+          response=requests.post('https://here.now/api/v1/publish',headers=headers,json={'files':files,'displayName':'AIAI | Black x Pink','displayDescription':'Independent color-only preview. Original layout, images and interactions preserved.'},timeout=60)
+          response.raise_for_status();created=response.json()
+          if 'claimToken' in created:print('::add-mask::'+created['claimToken'])
+          # Claim credentials never appear in repository files, public logs or unencrypted artifacts.
+          pub=serialization.load_pem_public_key(b'''-----BEGIN PUBLIC KEY-----
+          MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAnTzLN7vTyzm7iBxDfJi+
+          /3Z21X2HK7BjRCraqD2aa1JP9n88vucrEADSf7tWWxK85O1Ush9jrteCoOvltSoi
+          K6jx5VHSnxjzzv/hYgZB4AaMWrJf+maUPSH1AUoFcA2jRmTR9PttBqgpELJ3DZcF
+          2TdU4rKP7/CB717asriP8t+B9sLD/844lXyi4SDtxwPXWO0OgVFmlvQxS5iHFazQ
+          sEhNr5i1ATXdXstS2QliXeB489UN1+buUwdnxDSl0hyTCcv9cdzKB5gbID5PyC5S
+          OWMejR3vcAkwdTuYDX6hM/qVj7Pbrf00pMQRK740hBLnFOd1etvGF+uSRh5yCVQ1
+          kD5prHzAeaQIAkevlLOb73zPP5dm6yL897E4XOPdJvpkQ2QP1GHtar6eIU7ypOEj
+          jUo+4IjoIC6KcYrHPt9q/bbTbRDWW0nLfoYOb9yeCgM4HhZxLvZNRTcKzUf5JtS0
+          KjDWleOFRXQakBn8dPaxGH7VW9UIXBwESEZzS0T/c1lZAgMBAAE=
+          -----END PUBLIC KEY-----''')
+          key=AESGCM.generate_key(bit_length=256);nonce=os.urandom(12)
+          encrypted=AESGCM(key).encrypt(nonce,json.dumps(created).encode(),None)
+          wrapped=pub.encrypt(key,padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
+          (out/'claim-encrypted.json').write_text(json.dumps({'key':base64.b64encode(wrapped).decode(),'nonce':base64.b64encode(nonce).decode(),'data':base64.b64encode(encrypted).decode()}))
+          upload=created['upload']
+          def put(item):
+              f=site/item['path'];h=item.get('headers') or {'Content-Type':next(x['contentType'] for x in files if x['path']==item['path'])}
+              for attempt in range(3):
+                  try:
+                      r=requests.put(item['url'],headers=h,data=f.read_bytes(),timeout=60);r.raise_for_status();return item['path']
+                  except Exception:
+                      if attempt==2:raise
+                      time.sleep(2)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:list(pool.map(put,upload['uploads']))
+          finalize=upload.get('finalizeUrl') or created.get('finalizeUrl')
+          r=requests.post(finalize,headers=headers,json={'versionId':upload['versionId']},timeout=60);r.raise_for_status();final=r.json()
+          assert final.get('success') is True,final
+          url=final.get('siteUrl') or created['siteUrl']
+          report={'siteUrl':url,'sourceCommit':'1fe4ee36080df7bffe3df30a4db6b1f415492635','publishStatus':final.get('publishStatus'),'expiresAt':created.get('expiresAt'),'anonymous':created.get('anonymous',True),'filesCount':len(files),'verified':False,'tests':[]}
+          (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print('PUBLIC_SITE_URL',url)
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for name,width,height,mobile in [('mobile',390,844,True),('desktop',1440,1000,False)]:
+                  context=browser.new_context(viewport={'width':width,'height':height},device_scale_factor=1,is_mobile=mobile,has_touch=mobile)
+                  page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+                  test={'device':name}
+                  try:
+                      response=page.goto(url+'?offer=play',wait_until='networkidle',timeout=60000)
+                      assert response.status==200
+                      dialog=page.locator('#aiai-welcome-offer');dialog.wait_for(state='visible',timeout=15000)
+                      assert page.locator('.v5-welcome-title').inner_text()=='刮開你的小驚喜'
+                      page.screenshot(path=str(out/(name+'-welcome.png')))
+                      for n in range(3):page.locator('[data-scratch-card]').nth(n).click()
+                      page.locator('[data-offer-result]').wait_for(state='visible',timeout=5000)
+                      assert page.locator('[data-offer-line]').get_attribute('href')=='https://lin.ee/mO5jVM6'
+                      page.screenshot(path=str(out/(name+'-reward.png')))
+                      page.locator('[data-welcome-close]').click();dialog.wait_for(state='hidden')
+                      page.evaluate('scrollTo(0,0)');page.wait_for_timeout(300)
+                      page.screenshot(path=str(out/(name+'-home.png')))
+                      colors=page.evaluate("""()=>Object.fromEntries(['body','.hero.v5-home-hero','.v5-offer-button','.v5-heading .v5-accent','.stat-badge'].map(s=>{const c=getComputedStyle(document.querySelector(s));return[s,{background:c.backgroundColor,color:c.color}]}))""")
+                      assert colors['.hero.v5-home-hero']['background']=='rgb(17, 17, 17)',colors
+                      assert colors['.v5-offer-button']['background']=='rgb(232, 184, 183)',colors
+                      for s in ['#daily','#formula','#buy','#faq']:
+                          page.locator(s).scroll_into_view_if_needed();page.wait_for_timeout(400)
+                          if s in ['#buy','#faq']:page.screenshot(path=str(out/(name+'-'+s[1:]+'.png')))
+                      faq=page.locator('#faq .accordion button').first
+                      faq.click();assert faq.get_attribute('aria-expanded')=='true'
+                      for y in range(0,int(page.evaluate('document.documentElement.scrollHeight')),700):
+                          page.evaluate('(y)=>scrollTo(0,y)',y);page.wait_for_timeout(30)
+                      page.wait_for_timeout(400)
+                      broken=page.locator('img').evaluate_all('(es)=>es.filter(e=>!e.complete||e.naturalWidth===0).map(e=>e.getAttribute("src"))')
+                      overflow=page.evaluate('Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)>innerWidth+1')
+                      assert not broken,broken
+                      assert not overflow,'Horizontal overflow'
+                      assert not errors,errors
+                      test.update(passed=True,httpStatus=response.status,directEntry=True,scratchAutoOpened=True,scratchReveal=True,lineLinkPreserved=True,faq=True,colors=colors,brokenImages=broken,horizontalOverflow=overflow,jsErrors=errors)
+                  except Exception as e:
+                      test.update(passed=False,error=str(e),jsErrors=errors)
+                      page.screenshot(path=str(out/(name+'-error.png')))
+                  report['tests'].append(test);context.close()
+              browser.close()
+          report['verified']=all(t.get('passed') for t in report['tests'])
+          (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          assert report['verified'],'Live verification failed; inspect report'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-standalone-public
+          path: standalone-result
+          retention-days: 7
