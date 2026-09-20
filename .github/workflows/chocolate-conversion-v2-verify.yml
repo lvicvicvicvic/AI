@@ -1,0 +1,46 @@
+name: Verify public chocolate conversion V2
+on:
+  push:
+    branches: [preview/chocolate-conversion-v2-20260921]
+    paths: ['.github/workflows/chocolate-conversion-v2-verify.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install browser checks
+        run: |
+          python3 -m pip -q install playwright pyyaml
+          python3 -m playwright install --with-deps chromium > /tmp/browser-install.log 2>&1
+          sudo apt-get install -y fonts-noto-cjk > /tmp/fonts-install.log 2>&1
+      - name: Check existing deployment without republishing
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,yaml
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('verified-result');out.mkdir(exist_ok=True)
+          url='https://sleek-canopy-4sak.here.now/'
+          report={'siteUrl':url,'expiresAt':'2026-09-21T19:13:11.576Z','publishedCommit':'9417e59a6dba88ba33723a42f432c7fab94a3407','checkoutConnected':False,'productionSiteModified':False,'verified':False,'tests':[]}
+          def save():
+              (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          # Run the same mobile/desktop acceptance suite against the already-live site.
+          # The first run reached the last step but its selector matched both the skip
+          # button and the reward link. Scope the reward assertion to the actual anchor.
+          workflow=yaml.safe_load(pathlib.Path('.github/workflows/chocolate-conversion-v2-publish.yml').read_text())
+          source=next(s['run'] for s in workflow['jobs']['publish']['steps'] if s.get('name')=='Reconstruct, publish and verify the separate preview')
+          python_source=source.split("python3 - <<'PY'\n",1)[1].rsplit('\nPY',1)[0]
+          suite=python_source[python_source.index('with sync_playwright() as p:'):]
+          suite=suite.replace("page.locator('[data-offer-shop]')", "page.locator('a[data-offer-shop]')")
+          exec(compile(suite,'v2-public-acceptance.py','exec'),globals())
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-chocolate-conversion-v2-verified
+          path: verified-result
+          retention-days: 7
