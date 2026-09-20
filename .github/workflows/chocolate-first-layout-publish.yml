@@ -1,0 +1,178 @@
+name: Publish chocolate in first-version layout
+on:
+  push:
+    branches: [preview/chocolate-first-layout-blackpink-20260920]
+    paths: ['.github/workflows/chocolate-first-layout-publish.yml']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install browser verification dependencies
+        run: |
+          python3 -m pip -q install requests playwright cryptography
+          python3 -m playwright install --with-deps chromium > /tmp/aiai-browser-install.log 2>&1
+          sudo apt-get install -y fonts-noto-cjk > /tmp/aiai-fonts-install.log 2>&1
+      - name: Reconstruct approved layout, publish separately and verify anonymous access
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,base64,lzma,hashlib,subprocess,shutil,mimetypes,concurrent.futures,time,os
+          import requests
+          from cryptography.hazmat.primitives import serialization,hashes
+          from cryptography.hazmat.primitives.asymmetric import padding
+          from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('public-result');out.mkdir(exist_ok=True)
+          site=out/'site';site.mkdir(exist_ok=True)
+          payload=''.join(p.read_text().strip() for p in sorted(pathlib.Path('chocolate-first-layout-build').glob('payload-*.b64')))
+          assert hashlib.sha256(payload.encode()).hexdigest()=='81715ea626004dc0effb49059c3ca32e598ac383a2cacd61f4f5cae6c75269c3','Payload integrity check failed'
+          text_files=json.loads(lzma.decompress(base64.b64decode(payload)))
+          for name,content in text_files.items():
+              path=site/name
+              assert not pathlib.PurePosixPath(name).is_absolute() and '..' not in pathlib.PurePosixPath(name).parts
+              path.parent.mkdir(parents=True,exist_ok=True);path.write_text(content,encoding='utf-8')
+          manifest=json.loads((site/'build-manifest.json').read_text())
+          layout_commit='b46f100090513a66906df059f1678649faf6563c'
+          for name,digest in manifest['layoutCSSUnchanged'].items():
+              data=subprocess.check_output(['git','show',layout_commit+':site/'+name])
+              assert hashlib.sha256(data).hexdigest()==digest,name
+              (site/name).write_bytes(data)
+          for asset in manifest['productAssets']:
+              data=pathlib.Path(asset['sourceFile']).read_bytes()
+              assert hashlib.sha256(data).hexdigest()==asset['sha256'],asset['path']
+              path=site/asset['path'];path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
+          html=(site/'index.html').read_text()
+          assert '<h1' in html and '不只是巧克力' in html and '甜蜜開場' in html
+          assert not any(x in html for x in ['每日親密軟糖','DATE NIGHT GUMMIES','黑櫻桃','覆盆莓','28 PACKS'])
+          assert 'v5-hero-grid' in html and 'v5-scratch-grid' in html and 'gallery-thumbs' in html
+          files=[]
+          for f in sorted(site.rglob('*')):
+              if not f.is_file():continue
+              rel=f.relative_to(site).as_posix();mime=mimetypes.guess_type(rel)[0] or 'application/octet-stream'
+              if rel.endswith('.avif'):mime='image/avif'
+              if rel.endswith('.js'):mime='text/javascript; charset=utf-8'
+              if rel.endswith('.html'):mime='text/html; charset=utf-8'
+              if rel.endswith('.css'):mime='text/css; charset=utf-8'
+              files.append({'path':rel,'size':f.stat().st_size,'contentType':mime,'hash':hashlib.sha256(f.read_bytes()).hexdigest()})
+          headers={'X-HereNow-Client':'chatgpt/chocolate-first-layout','Content-Type':'application/json'}
+          r=requests.post('https://here.now/api/v1/publish',headers=headers,json={'files':files,'displayName':'AIAI 巧克力｜第一版黑粉排版','displayDescription':'Chocolate-only preview in the approved first-version layout. Separate from the production store.'},timeout=60)
+          r.raise_for_status();created=r.json()
+          for key in ['claimToken','claimUrl']:
+              if created.get(key):print('::add-mask::'+created[key],flush=True)
+          pub=serialization.load_pem_public_key(b'''-----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoXvmgzMHp5e3aAy0AuUt
+          ki1zwySTbL6iLREnt8Q/MPSIXJbSkBvaI6g6/CkTA+E6YGmD+ZAStcE7SYKk3R/H
+          CijnsND+v7NFh8EwZelcXpEX1gDrmw4ntQbjInXdCibDbzdfT5HWS1pxo19uNPo0
+          nU/htJtYc5EGYWgjPdc7FCYcFkeannqzpJKPniRZriG2MqLna0Kdc9nSpstnqN9U
+          jlArPaOZ9bEudI+lBJ57UiApCIE6CS25TGlX85b6oFCTN96bnBoFrzmWsjDY8KaU
+          e8i8C0KAez4HYUIX8oBr1UAos/LlMGnrk3AFfoQP/yS8EIdMuSlqPwoqyfNIgcSf
+          hwIDAQAB
+          -----END PUBLIC KEY-----''')
+          key=AESGCM.generate_key(bit_length=256);nonce=os.urandom(12)
+          encrypted=AESGCM(key).encrypt(nonce,json.dumps(created).encode(),None)
+          wrapped=pub.encrypt(key,padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
+          (out/'claim-encrypted.json').write_text(json.dumps({'key':base64.b64encode(wrapped).decode(),'nonce':base64.b64encode(nonce).decode(),'data':base64.b64encode(encrypted).decode()}))
+          upload=created['upload']
+          def put(item):
+              f=site/item['path'];h=item.get('headers') or {'Content-Type':next(x['contentType'] for x in files if x['path']==item['path'])}
+              for attempt in range(3):
+                  try:
+                      rr=requests.put(item['url'],headers=h,data=f.read_bytes(),timeout=60);rr.raise_for_status();return item['path']
+                  except Exception:
+                      if attempt==2:raise
+                      time.sleep(2)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:list(pool.map(put,upload['uploads']))
+          finalize=upload.get('finalizeUrl') or created.get('finalizeUrl')
+          rr=requests.post(finalize,headers=headers,json={'versionId':upload['versionId']},timeout=60);rr.raise_for_status();final=rr.json()
+          assert final.get('success') is True,'Publish finalize did not succeed'
+          url=final.get('siteUrl') or created['siteUrl']
+          report={'siteUrl':url,'layoutSource':manifest['layoutSource'],'contentSource':manifest['contentSource'],'buildCommit':os.getenv('GITHUB_SHA'),'publishStatus':final.get('publishStatus'),'expiresAt':created.get('expiresAt'),'filesCount':len(files),'originalLayoutCSSIdentical':True,'originalChocolateImagesIdentical':True,'productionSiteModified':False,'verified':False,'tests':[]}
+          def save():
+              (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          save();print('PUBLIC_SITE_URL',url,flush=True)
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for name,width,height,mobile in [('mobile',390,844,True),('desktop',1440,1000,False)]:
+                  context=browser.new_context(viewport={'width':width,'height':height},device_scale_factor=1,is_mobile=mobile,has_touch=mobile)
+                  page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));test={'device':name}
+                  try:
+                      response=page.goto(url+'?offer=off',wait_until='networkidle',timeout=60000)
+                      assert response.status==200,response.status
+                      page.wait_for_timeout(900)
+                      assert page.locator('h1').inner_text()=='不只是巧克力\n是今晚的\n甜蜜開場'
+                      text=page.locator('body').inner_text()
+                      assert not any(t in text for t in ['軟糖','每日親密','黑櫻桃','覆盆莓','D3','定期補貨'])
+                      colors=page.evaluate("""()=>Object.fromEntries(['.hero.v5-home-hero','.v5-offer-button'].map(s=>{const c=getComputedStyle(document.querySelector(s));return[s,{background:c.backgroundColor,color:c.color}]}))""")
+                      assert colors['.hero.v5-home-hero']['background']=='rgb(17, 17, 17)',colors
+                      assert colors['.v5-offer-button']['background']=='rgb(232, 184, 183)',colors
+                      geometry=page.evaluate("""()=>Object.fromEntries(['.v5-hero-grid','.v5-hero-media','.v5-hero-copy','.hero-stats'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return[s,[r.x,r.width]]}))""")
+                      expected={'.v5-hero-grid':[16,358],'.v5-hero-media':[16,358],'.v5-hero-copy':[16,358],'.hero-stats':[16,358]} if mobile else {'.v5-hero-grid':[80,1280],'.v5-hero-media':[748,612],'.v5-hero-copy':[80,612],'.hero-stats':[130,1180]}
+                      assert geometry==expected,geometry
+                      page.screenshot(path=str(out/('public-'+name+'-home.png')))
+                      page.locator('#buy').scroll_into_view_if_needed();page.wait_for_timeout(1000)
+                      page.screenshot(path=str(out/('public-'+name+'-buy.png')))
+                      for qty,price in [('3','NT$ 948'),('12','NT$ 1,698'),('24','NT$ 2,598'),('6','NT$ 998')]:
+                          page.locator('[data-pack="'+qty+'"]').click()
+                          assert page.locator('[data-chocolate-price]').inner_text()==price
+                      page.locator('[data-chocolate-plan="6lube"]').click()
+                      assert page.locator('[data-chocolate-price]').inner_text()=='NT$ 1,317'
+                      page.locator('[data-chocolate-order]').click();page.locator('[data-chocolate-dialog]').wait_for(state='visible')
+                      assert not page.locator('[data-addon-lube-row]').is_visible()
+                      page.locator('[data-order-close]').click();page.locator('[data-pack="6"]').click()
+                      page.locator('[data-chocolate-order]').click();page.locator('[data-addon="lube"]').check()
+                      assert page.locator('[data-official-checkout]').get_attribute('href')=='https://www.aiai.com.tw/#aiai-sku'
+                      page.screenshot(path=str(out/('public-'+name+'-order.png')))
+                      page.locator('[data-order-close]').click()
+                      page.locator('[data-gallery-thumb="1"]').click()
+                      assert 'is-active' in page.locator('[data-slide="1"]').get_attribute('class')
+                      page.locator('[data-nutrition-open]').click()
+                      assert page.locator('[data-nutrition-modal]').get_attribute('aria-hidden')=='false'
+                      page.keyboard.press('Escape')
+                      assert page.locator('[data-nutrition-modal]').get_attribute('aria-hidden')=='true'
+                      faq=page.locator('#faq .accordion button').first;faq.click();assert faq.get_attribute('aria-expanded')=='true'
+                      page.screenshot(path=str(out/('public-'+name+'-faq.png')))
+                      if mobile:
+                          page.locator('[data-menu-open]').click();assert page.locator('[data-menu-drawer]').is_visible()
+                          page.locator('[data-menu-drawer] [data-menu-close]').click();page.wait_for_timeout(350)
+                      page.locator('img').evaluate_all("es=>es.forEach(e=>e.loading='eager')")
+                      page.wait_for_function('[...document.images].every(i=>i.complete && i.naturalWidth>0)',timeout=20000)
+                      assert not page.evaluate('Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)>innerWidth+1')
+                      page.evaluate('scrollTo(0,0)');page.wait_for_timeout(400)
+                      page.locator('.v5-hero-badge').click();page.locator('#aiai-welcome-offer').wait_for(state='visible');page.wait_for_timeout(400)
+                      page.screenshot(path=str(out/('public-'+name+'-welcome.png')))
+                      for i in range(3):page.locator('[data-scratch-card]').nth(i).click()
+                      page.locator('[data-offer-result]').wait_for(state='visible');page.wait_for_timeout(350)
+                      assert page.locator('.v5-result-kicker').inner_text()=='滿 3 件享'
+                      assert page.locator('[data-offer-line]').get_attribute('href')=='https://lin.ee/mO5jVM6'
+                      page.screenshot(path=str(out/('public-'+name+'-reward.png')))
+                      page.locator('[data-welcome-close]').click();assert not errors,errors
+                      test.update(passed=True,httpStatus=response.status,directAnonymousAccess=True,firstLayoutGeometryIdentical=True,heroGeometry=geometry,chocolateOnly=True,variantPrices=True,gallery=True,orderPreview=True,checkoutIsOfficialLink=True,faq=True,scratchGame=True,qualifiedOffer=True,brokenImages=[],horizontalOverflow=False,errors=errors)
+                  except Exception as e:
+                      test.update(passed=False,error=str(e),errors=errors)
+                      page.screenshot(path=str(out/('public-'+name+'-error.png')))
+                  report['tests'].append(test);save();context.close()
+              context=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True)
+              page=context.new_page()
+              try:
+                  response=page.goto(url,wait_until='networkidle',timeout=60000)
+                  page.locator('#aiai-welcome-offer').wait_for(state='visible',timeout=15000)
+                  report['defaultEntryScratchAutoOpened']=True
+              except Exception as e:
+                  report['defaultEntryScratchAutoOpened']=False;report['defaultEntryError']=str(e)
+              context.close();browser.close()
+          report['verified']=all(t.get('passed') for t in report['tests']) and report.get('defaultEntryScratchAutoOpened',False)
+          save();print(json.dumps(report,ensure_ascii=False,indent=2),flush=True)
+          assert report['verified'],'Public preview verification failed; inspect report'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-chocolate-first-layout-public
+          path: public-result
+          retention-days: 7
