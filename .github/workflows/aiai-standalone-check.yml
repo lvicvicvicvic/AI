@@ -1,0 +1,70 @@
+name: Verify standalone public AIAI site
+on:
+  push:
+    branches: [publish/aiai-black-pink-standalone-20260920]
+    paths: ['.github/workflows/aiai-standalone-check.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 -m pip -q install requests playwright
+          python3 -m playwright install --with-deps chromium webkit >/tmp/browser.log 2>&1
+      - name: Verify live public site and horizontal lazy images
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,hashlib,requests,concurrent.futures
+          from playwright.sync_api import sync_playwright
+          out=pathlib.Path('public-check');out.mkdir(exist_ok=True)
+          url='https://walnut-ferry-hdek.here.now/'
+          report={'siteUrl':url,'verified':False,'files':[],'tests':[]}
+          def check(f):
+              rel=f.relative_to('site').as_posix();r=requests.get(url+rel,timeout=30);r.raise_for_status()
+              if rel!='index.html':assert r.content==f.read_bytes(),rel
+              return {'path':rel,'httpStatus':r.status_code,'mime':r.headers.get('content-type'),'bytes':len(r.content)}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:report['files']=list(pool.map(check,[f for f in pathlib.Path('site').rglob('*') if f.is_file()]))
+          with sync_playwright() as p:
+              for engine,width,height,mobile in [('chromium',390,844,True),('chromium',1440,1000,False),('webkit',390,844,True)]:
+                  name=engine+('-mobile' if mobile else '-desktop')
+                  browser=getattr(p,engine).launch()
+                  page=browser.new_page(viewport={'width':width,'height':height},is_mobile=mobile,has_touch=mobile)
+                  errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+                  test={'device':name}
+                  try:
+                      r=page.goto(url+'?offer=play',wait_until='networkidle',timeout=45000);assert r.status==200
+                      page.locator('#aiai-welcome-offer').wait_for(state='visible',timeout=10000)
+                      page.screenshot(path=str(out/(name+'-welcome.png')))
+                      for n in range(3):page.locator('[data-scratch-card]').nth(n).click()
+                      page.locator('[data-offer-result]').wait_for(state='visible',timeout=5000)
+                      assert page.locator('[data-offer-line]').get_attribute('href')=='https://lin.ee/mO5jVM6'
+                      page.locator('[data-welcome-close]').click()
+                      page.screenshot(path=str(out/(name+'-home.png')))
+                      assert page.locator('.hero.v5-home-hero').evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(17, 17, 17)'
+                      for n in range(page.locator('.value-card').count()):
+                          page.locator('.value-card').nth(n).scroll_into_view_if_needed();page.wait_for_timeout(300)
+                      page.wait_for_function("Array.from(document.querySelectorAll('.value-card img')).every(e=>e.complete&&e.naturalWidth>0)")
+                      for s in ['#formula','#buy','#faq']:
+                          page.locator(s).scroll_into_view_if_needed();page.wait_for_timeout(300)
+                      faq=page.locator('#faq .accordion button').first;faq.click();assert faq.get_attribute('aria-expanded')=='true'
+                      broken=page.locator('img').evaluate_all('(es)=>es.filter(e=>e.complete&&e.naturalWidth===0).map(e=>e.src)')
+                      assert not broken,broken
+                      assert not errors,errors
+                      assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+                      test.update(passed=True,directPublicEntry=True,blackPinkApplied=True,scratchOpened=True,scratchRevealed=True,linePreserved=True,horizontalLazyImagesLoaded=True,faq=True,brokenImages=broken,jsErrors=errors)
+                  except Exception as e:
+                      test.update(passed=False,error=str(e),jsErrors=errors);page.screenshot(path=str(out/(name+'-error.png')))
+                  report['tests'].append(test);browser.close()
+          report['verified']=all(t['passed'] for t in report['tests'])
+          (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2));print(json.dumps(report,ensure_ascii=False,indent=2))
+          assert report['verified']
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aiai-public-live-check
+          path: public-check
+          retention-days: 7
